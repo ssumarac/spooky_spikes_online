@@ -15,7 +15,7 @@ import plotly.express as px
 
 stlit.title('Pre-Processing App')
 
-def file_selector(folder_path='.'):
+def file_selector(folder_path='./Users/srdjan/Desktop'):
     filenames = os.listdir(folder_path)
     selected_filename = stlit.selectbox('Select a file', filenames)
     return os.path.join(folder_path, selected_filename)
