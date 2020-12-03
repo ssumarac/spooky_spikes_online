@@ -16,7 +16,14 @@ import plotly.express as px
 stlit.title('Pre-Processing App')
 
 def file_selector(folder_path='.'):
-    filenames = os.listdir(folder_path)
+    filenames = []
+
+    for file in os.listdir(folder_path):
+        if file.endswith('.smr'):
+          filenames.append(file)
+        
+    filenames.sort()
+ 
     selected_filename = stlit.selectbox('Select a file', filenames)
     return os.path.join(folder_path, selected_filename)
 
