@@ -15,6 +15,8 @@ import plotly.express as px
 
 stlit.title('Pre-Processing App')
 
+sidebar_path = stlit.text_input('Path to .smr files')
+
 def file_selector(folder_path='.'):
     filenames = []
 
@@ -27,7 +29,7 @@ def file_selector(folder_path='.'):
     selected_filename = stlit.selectbox('Select a file', filenames)
     return os.path.join(folder_path, selected_filename)
 
-filename = file_selector()
+filename = file_selector(sidebar_path)
 
 stlit.subheader('Peak Detection')
 
