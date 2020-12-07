@@ -41,11 +41,17 @@ def import_raw_smr(filename):
     
     analogsignals = segments.analogsignals
 
+    channel_id = []
     for i in range(len(analogsignals)):
-        annotations = analogsignals[i].annotations
-        
-        if annotations['channel_id'] == 0 or 1:
-            return analogsignals[i], analogsignals[i].sampling_rate, analogsignals[i].t_start, analogsignals[i].t_stop
+        channel_id.append(analogsignals[i].annotations['channel_id'])
+    
+    if (0 in channel_id) == True:
+        idx = channel_id.index(0)
+        return analogsignals[idx], analogsignals[idx].sampling_rate, analogsignals[idx].t_start, analogsignals[idx].t_stop
+    
+    elif (1 in channel_id) == True:
+        idx = channel_id.index(1)
+        return analogsignals[idx], analogsignals[idx].sampling_rate, analogsignals[idx].t_start, analogsignals[idx].t_stop
 
 
 raw_data, fs, t_start, t_stop = import_raw_smr(filename)
