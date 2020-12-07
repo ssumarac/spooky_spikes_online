@@ -40,15 +40,12 @@ def import_raw_smr(filename):
     segments = block.segments[0]
     
     analogsignals = segments.analogsignals
-    
-    t_start = segments.t_start
-    t_stop = segments.t_stop
 
     for i in range(len(analogsignals)):
         annotations = analogsignals[i].annotations
         
         if annotations['channel_id'] == 0 or 1:
-            return analogsignals[i], analogsignals[i].sampling_rate, t_start, t_stop
+            return analogsignals[i], analogsignals[i].sampling_rate, analogsignals[i].t_start, analogsignals[i].t_stop
 
 
 raw_data, fs, t_start, t_stop = import_raw_smr(filename)
