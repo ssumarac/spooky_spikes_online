@@ -9,11 +9,9 @@ import spikeinterface.extractors as se
 import spikeinterface.toolkit as st
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
-import elephant as el
-from quantities import s, Hz
 import plotly.express as px
 
-stlit.title('Pre-Processing App')
+stlit.title('Neural Segments App')
 
 def file_selector(folder_path='.'):
     filenames = []
@@ -31,10 +29,12 @@ filename = file_selector()
 
 stlit.subheader('Peak Detection')
 
-def import_raw_smr(filename):
+def import_raw_smr(filename, path):
+    
+    os.chdir(path)
     
     reader = neo.io.Spike2IO(filename)
-
+    
     block = reader.read(lazy=False)[0]
     
     segments = block.segments[0]
@@ -47,40 +47,46 @@ def import_raw_smr(filename):
     
     if (0 in channel_id) == True:
         idx = channel_id.index(0)
-        return analogsignals[idx], analogsignals[idx].sampling_rate, analogsignals[idx].t_start, analogsignals[idx].t_stop
+        return np.array(analogsignals[idx],dtype='float64').transpose(), int(analogsignals[idx].sampling_rate), float(analogsignals[idx].t_start), float(analogsignals[idx].t_stop)
     
     elif (1 in channel_id) == True:
         idx = channel_id.index(1)
-        return analogsignals[idx], analogsignals[idx].sampling_rate, analogsignals[idx].t_start, analogsignals[idx].t_stop
+        return np.array(analogsignals[idx],dtype='float64').transpose(), int(analogsignals[idx].sampling_rate), float(analogsignals[idx].t_start), float(analogsignals[idx].t_stop)
 
-
-raw_data, fs, t_start, t_stop = import_raw_smr(filename)
-
-raw_data = np.array(raw_data,dtype='float64').transpose()
+raw_data, fs, t_start, t_stop = import_raw_smr(sidebar_filename,sidebar_path)
 t = np.arange(t_start,t_stop,1/fs)
-fs = int(fs)
 
-lowpass_left, highpass_right = stlit.beta_columns(2)
-lowpass_fs = lowpass_left.number_input('Lowpass Frequency Cutoff',0,1500,300,100)
-highpass_fs = highpass_right.number_input('Highpass Frequency Cutoff',2000,6000,3000,100)
+def filtering():
 
-recording = se.NumpyRecordingExtractor(timeseries=raw_data, geom=None, sampling_frequency=fs)
-recording_bp = st.preprocessing.bandpass_filter(recording, freq_min=lowpass_fs, freq_max=highpass_fs)
-filtered_data = recording_bp.get_traces().flatten();
-
-left_inverted, dummy1,dummy2 = stlit.beta_columns(3)
-inverted = left_inverted.checkbox('Invert Peaks')
-threshold_slider = stlit.slider('Median Absolute Deviations (Noise Estimate)',1,20,4)
-
-if inverted == True:
-    threshold = threshold_slider*np.median(np.abs(filtered_data)/0.6745)
-    peaks = sp.signal.find_peaks(filtered_data, height=threshold)
+    lowpass_left, highpass_right = stlit.beta_columns(2)
+    lowpass_fs = lowpass_left.number_input('Lowpass Frequency Cutoff',0,1500,300,100)
+    highpass_fs = highpass_right.number_input('Highpass Frequency Cutoff',2000,6000,3000,100)
     
-else:
-    threshold = -threshold_slider*np.median(np.abs(filtered_data)/0.6745)
-    peaks = sp.signal.find_peaks(-filtered_data, height=-threshold)
+    recording = se.NumpyRecordingExtractor(timeseries=raw_data, geom=None, sampling_frequency=fs)
+    recording_bp = st.preprocessing.bandpass_filter(recording, freq_min=lowpass_fs, freq_max=highpass_fs)
     
-peak_indices = peaks[0]
+    
+    return recording_bp.get_traces().flatten();
+
+filtered_data = filtering()
+
+def peak_detection(filtered_data):
+
+    left_inverted, dummy1,dummy2 = stlit.beta_columns(3)
+    inverted = left_inverted.checkbox('Invert Peaks')
+    threshold_slider = stlit.slider('Median Absolute Deviations (Noise Estimate)',1,20,4)
+    
+    if inverted == True:
+        threshold = threshold_slider*np.median(np.abs(filtered_data)/0.6745)
+        peaks = sp.signal.find_peaks(filtered_data, height=threshold)
+        
+    else:
+        threshold = -threshold_slider*np.median(np.abs(filtered_data)/0.6745)
+        peaks = sp.signal.find_peaks(-filtered_data, height=-threshold)
+        
+    return peaks[0], threshold
+
+peak_indices, threshold = peak_detection(filtered_data)
 
 fig = go.Figure(data=go.Scatter(
     x = t, 
@@ -98,7 +104,7 @@ fig.add_trace(go.Scatter(
     showlegend=False))
 
 fig.add_shape(type='line',
-              x0=float(t_start),x1=float(t_stop),
+              x0=t_start,x1=t_stop,
               y0=threshold,y1=threshold,
               line = dict(color='black'),
               name='Threshold')
@@ -107,15 +113,86 @@ fig.add_shape(type='line',
 
 stlit.plotly_chart(fig)
 
-spike_window = int( 1*10**-3*int(fs))
-peak_indices = peak_indices[(peak_indices > spike_window) & (peak_indices < peak_indices[-1] - spike_window)]
-spikes = np.empty([1, spike_window*2])
-for k in peak_indices:
-    temp_spike = filtered_data[k - spike_window:k + spike_window]
-    spikes = np.append(spikes, temp_spike.reshape(1, spike_window*2), axis=0)
+def get_spikes(peak_indices, spike_window_ms):
+    
+    spike_window = int(spike_window_ms*10**-3*int(fs))
+    
+    peak_indices = peak_indices[(peak_indices > spike_window) & (peak_indices < peak_indices[-1] - spike_window)]
+    spikes = np.empty([1, spike_window*2])
+    for k in peak_indices:
+        temp_spike = filtered_data[k - spike_window:k + spike_window]
+        spikes = np.append(spikes, temp_spike.reshape(1, spike_window*2), axis=0)
+    
+    spikes = np.delete(spikes,0,axis=0)
+    
+    return peak_indices, spikes
 
-spikes = np.delete(spikes,0,axis=0)
+peak_indices, spikes = get_spikes(peak_indices, 1)
 
+stlit.subheader('Spike Sorting')
+
+def spike_sorting():
+
+    sorting_required = stlit.checkbox('Is spike sorting required?')
+    
+    if sorting_required == True:
+    
+        
+        pca = PCA(n_components=2) 
+        features = pca.fit_transform(spikes)
+        #total_var = pca.explained_variance_ratio_.sum() * 100
+    
+        clusters = stlit.selectbox('How many clusters are there?',range(2,7))
+        
+        #spectral_model = SpectralClustering(n_clusters = clusters) 
+        kmeans = KMeans(n_clusters=clusters, random_state=0).fit(features)
+          
+        #labels = spectral_model.fit_predict(df_features) 
+        labels = kmeans.labels_
+        
+        colour_list = list(['red','blue','orange','cyan','magenta','yellow'])
+        colour_label = np.array(colour_list)[labels]
+        
+        fig2 = go.Figure(go.Scatter(
+            x = features[:,0],
+            y = features[:,1],
+            mode = 'markers',
+            marker = dict(color = colour_label)))
+        
+        stlit.plotly_chart(fig2)
+        
+        fig3 = go.Figure(go.Scatter(
+            x = t, 
+            y = filtered_data, 
+            mode = 'lines',
+            name='Filtered Data',
+            line = dict(color='darkgreen'),
+            showlegend=False))
+        
+        fig3.add_trace(go.Scatter(
+            x=peak_indices/fs,
+            y=[filtered_data[j] for j in peak_indices],
+            mode='markers',
+            marker = dict(color = colour_label),
+            showlegend=False))
+        
+        stlit.plotly_chart(fig3)
+        
+        desired_clusters = stlit.selectbox('Select Desired Cluster',colour_list[0:clusters])
+        
+        return np.array(peak_indices[colour_label == desired_clusters]), spikes[colour_label == desired_clusters],desired_clusters
+        
+    else:
+        desired_clusters = 'red'
+        labels = np.zeros(len(peak_indices),dtype='int32')
+        colour_label = np.array(list(['red']))[labels]
+        
+        return np.array(peak_indices), spikes, desired_clusters
+        
+peak_indices, spikes, desired_clusters = spike_sorting()
+
+spiketrain = peak_indices/fs
+    
 def snr(spikes):
     
     S_avg = np.matrix(spikes).mean(axis=0)
@@ -134,110 +211,119 @@ def snr(spikes):
         
     return snr
 
-pca = PCA(n_components=2) 
-features = pca.fit_transform(spikes)
-total_var = pca.explained_variance_ratio_.sum() * 100
-
-
-stlit.subheader('Spike Sorting')
-
-sorting_required = stlit.checkbox('Is spike sorting required?')
-
-if sorting_required == True:
-
-    clusters = stlit.selectbox('How many clusters are there?',range(2,7))
-    
-    #spectral_model = SpectralClustering(n_clusters = clusters) 
-    kmeans = KMeans(n_clusters=clusters, random_state=0).fit(features)
-      
-    #labels = spectral_model.fit_predict(df_features) 
-    labels = kmeans.labels_
-    
-    colour_list = list(['red','blue','orange','cyan','magenta','yellow'])
-    colour_label = np.array(colour_list)[labels]
-    
-    fig2 = go.Figure(go.Scatter(
-        x = features[:,0],
-        y = features[:,1],
-        mode = 'markers',
-        marker = dict(color = colour_label)))
-    
-    stlit.plotly_chart(fig2)
-    
-    fig3 = go.Figure(go.Scatter(
-        x = t, 
-        y = filtered_data, 
-        mode = 'lines',
-        name='Filtered Data',
-        line = dict(color='darkgreen'),
-        showlegend=False))
-    
-    fig3.add_trace(go.Scatter(
-        x=peak_indices/fs,
-        y=[filtered_data[j] for j in peak_indices],
-        mode='markers',
-        marker = dict(color = colour_label),
-        showlegend=False))
-    
-    stlit.plotly_chart(fig3)
-    
-    desired_clusters = stlit.selectbox('Select Desired Cluster',colour_list[0:clusters])
-    
-else:
-    desired_clusters = 'red'
-    labels = np.zeros(len(peak_indices),dtype='int32')
-    colour_label = np.array(list(['red']))[labels]
-    
-stlit.subheader('Spiking Features')
-    
-spiketrain = np.array(peak_indices[colour_label == desired_clusters])/fs * s
-        
-snr_list = float(snr(spikes[colour_label == desired_clusters]))
+snr_value = float(snr(spikes))
 num_spikes = int(len(spiketrain))
-#firing_rate = float(len(spiketrain)/(t_stop - t_start))
-firing_rate = el.statistics.mean_firing_rate(spiketrain,t_start,t_stop)
+firing_rate = float(len(spiketrain)/(t_stop - t_start))
 
-isi_array = el.statistics.isi(spiketrain)
-percent_isi_violations = (sum(isi_array < 1/1000)/len(isi_array))*100
 
-dispersion_index = np.std(isi_array)**2/np.mean(isi_array)
-cv = el.statistics.cv(spiketrain)
-burst_index = float(np.mean(isi_array)/sp.stats.mode(isi_array,axis=None)[0])
-asymmetry_index = 1/burst_index
+def isi_func(spiketrain):
+    isi = []
+    for i in range(0,len(spiketrain)-1):
+        isi.append(spiketrain[i+1] - spiketrain[i])
+        
+    return np.array(isi)
 
-# burst_array = []
-# mean_isi = float(np.mean(isi_array))
+isi = isi_func(spiketrain)
+isi_mean = isi.mean()
 
-# for b in isi_array:
-#     burst_array.append
+burst_logical = []
+prev_burst = False
+inter_bi = []
+intra_bi = []
 
-df_statistics = pd.DataFrame([num_spikes,
-                              snr_list,
-                              float(firing_rate),
-                              percent_isi_violations,
-                              float(dispersion_index),
-                              cv,
-                              burst_index,
-                              asymmetry_index
-                              ])
+for i in range(0,len(spiketrain)-1):
     
-df_statistics.columns = [desired_clusters]
-df_statistics.index = ['Number of Spikes',
-                       'SNR','Firing Rate', 
-                       '% of ISI Violations',
-                       'Dispersion Index',
-                       'Coefficient of Variation',
-                       'Burst Index',
-                       'Asymmetry Index'
-                       ]
+    if (isi[i] <= 0.5*isi_mean) and prev_burst == False:
+        prev_burst = True 
+        burst_logical.append(True)
+        inter_bi.append(spiketrain[i])
+        intra_bi.append(spiketrain[i])    
+   
+    elif (isi[i] <= 0.5*isi_mean) and prev_burst == True:
+        prev_burst = True 
+        burst_logical.append(True)
+        intra_bi.append(spiketrain[i])
+        
+    elif (isi[i] > 0.5*isi_mean) and prev_burst == False:
+        prev_burst = False 
+        burst_logical.append(False)
+        
+    elif (isi[i] > 0.5*isi_mean) and prev_burst == True:
+        prev_burst = False 
+        burst_logical.append(True)
+        intra_bi.append(spiketrain[i])
 
-stlit.dataframe(df_statistics)
 
-df_isi = pd.DataFrame(isi_array)
+fig3 = go.Figure(go.Scatter(
+    x = t, 
+    y = filtered_data, 
+    mode = 'lines',
+    name='Filtered Data',
+    line = dict(color='darkgreen'),
+    showlegend=False))
+
+peak_indices = np.delete(peak_indices,0,axis=0)
+
+fig3.add_trace(go.Scatter(
+    x=peak_indices[burst_logical]/fs,
+    y=[filtered_data[j] for j in peak_indices[burst_logical]],
+    mode='markers',
+    marker = dict(color = 'black'),
+    showlegend=False))
+
+stlit.plotly_chart(fig3)
+
+stlit.sidebar.subheader('Spiking Features')
+
+stlit.sidebar.write('Number of Spikes: ',num_spikes)
+stlit.sidebar.write('Firing Rate (Hz): ', round(float(firing_rate),2))
+stlit.sidebar.write('SNR'': ',round(snr_value,2))
+stlit.sidebar.write('Burst Ratio',round(len(intra_bi)/num_spikes,2))
+stlit.sidebar.write('Inter-Burst Rate (Hz)',round(1/isi_func(inter_bi).mean(),2))
+stlit.sidebar.write('Intra-Burst Rate (Hz)',round(1/isi_func(intra_bi).mean(),2))
+
+
+
+df_isi = pd.DataFrame(isi)
 df_isi.columns = ['ISI'+ ' of ' + desired_clusters]
 
+stlit.subheader('Inter-spike interval')
 fig5 = px.histogram(df_isi)
-                     
 stlit.plotly_chart(fig5)
-   
+
+
+
+
+# df_ibi_inter = pd.DataFrame(inter_bi)
+# df_ibi_inter.columns = ['IBI_Inter'+ ' of ' + desired_clusters]
+
+# stlit.subheader('Inter-burst interval')
+# fig6 = px.histogram(df_isi)
+# stlit.plotly_chart(fig6)
+
+
+
+
+# df_ibi_intra = pd.DataFrame(intra_bi)
+# df_ibi_intra.columns = ['IBI_Intra'+ ' of ' + desired_clusters]
+
+# stlit.subheader('Intra-burst interval')
+# fig7 = px.histogram(df_isi)
+# stlit.plotly_chart(fig7)
+
+
+
+
+# df_statistics = pd.DataFrame([num_spikes,
+#                               snr_value,
+#                               firing_rate,
+#                               ])
     
+# df_statistics.columns = [desired_clusters]
+# df_statistics.index = ['Number of Spikes',
+#                        'SNR',
+#                        'Firing Rate', 
+#                        ]
+
+# stlit.dataframe(df_statistics)
+
