@@ -29,9 +29,7 @@ filename = file_selector()
 
 stlit.subheader('Peak Detection')
 
-def import_raw_smr(filename, path):
-    
-    os.chdir(path)
+def import_raw_smr(filename):
     
     reader = neo.io.Spike2IO(filename)
     
@@ -53,7 +51,7 @@ def import_raw_smr(filename, path):
         idx = channel_id.index(1)
         return np.array(analogsignals[idx],dtype='float64').transpose(), int(analogsignals[idx].sampling_rate), float(analogsignals[idx].t_start), float(analogsignals[idx].t_stop)
 
-raw_data, fs, t_start, t_stop = import_raw_smr(sidebar_filename,sidebar_path)
+raw_data, fs, t_start, t_stop = import_raw_smr(sidebar_filename)
 t = np.arange(t_start,t_stop,1/fs)
 
 def filtering():
