@@ -63,7 +63,7 @@ def import_raw_smr(filename):
         raw_data = np.array(analogsignals[idx],dtype='float64').transpose()
         return raw_data[0], float(analogsignals[idx].sampling_rate), float(analogsignals[idx].t_start), float(analogsignals[idx].t_stop),2
 
-raw_data, fs, t_start, t_stop, channel = import_raw_smr(sidebar_filename,sidebar_path)
+raw_data, fs, t_start, t_stop, channel = import_raw_smr(sidebar_filename)
 t = np.arange(t_start,t_stop,1/fs)
 
 lowpass_left, highpass_right = st.beta_columns(2)
