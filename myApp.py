@@ -24,7 +24,7 @@ def file_selector(folder_path='.'):
         
     filenames.sort()
  
-    selected_filename = stlit.selectbox('Select a file', filenames)
+    selected_filename = st.selectbox('Select a file', filenames)
     return os.path.join(folder_path, selected_filename)
 
 sidebar_filename = file_selector()
