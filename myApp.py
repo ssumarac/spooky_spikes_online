@@ -12,20 +12,6 @@ import elephant as el
 import io
 import os
 
-##################################################################################################################
-
-st.title('Neural Segments App')
-
-f = st.sidebar.file_uploader('Select smr file to upload','smr',False)
-
-g = io.BytesIO(f.read())
-
-temploc = f.name
-
-with open(temploc, 'wb') as out:
-    out.write(g.read())
-
-##################################################################################################################
 
 @st.cache
 def import_raw_smr(filename):
@@ -52,23 +38,9 @@ def import_raw_smr(filename):
         raw_data = np.array(analogsignals[idx],dtype='float64').transpose()
         return raw_data[0], float(analogsignals[idx].sampling_rate), float(analogsignals[idx].t_start), float(analogsignals[idx].t_stop),2
 
-raw_data, fs, t_start, t_stop, channel = import_raw_smr(f.name)
-t = np.arange(t_start,t_stop,1/fs)
-
-lowpass_left, highpass_right = st.beta_columns(2)
-lowpass_fs = lowpass_left.number_input('Lowpass Frequency Cutoff',0,1500,300,100)
-highpass_fs = highpass_right.number_input('Highpass Frequency Cutoff',2000,6000,3000,100)
-
 @st.cache
 def bandpass_filter(raw_data, lowpass_fs, highpass_fs, fs):
     return el.signal_processing.butter(raw_data, highpass_frequency=lowpass_fs, lowpass_frequency=highpass_fs, order=4, filter_function='filtfilt', sampling_frequency=fs, axis=- 1)
-
-filtered_data = bandpass_filter(raw_data, lowpass_fs, highpass_fs, fs)
-##################################################################################################################
-
-left_inverted, dummy1,dummy2 = st.beta_columns(3)
-inverted = left_inverted.checkbox('Invert Peaks')
-threshold_slider = st.slider('Median Absolute Deviations (Noise Estimate)',1,20,4)
 
 @st.cache
 def peak_detection(filtered_data,inverted,threshold_slider):
@@ -80,44 +52,13 @@ def peak_detection(filtered_data,inverted,threshold_slider):
     else:
         threshold = -threshold_slider*np.median(np.abs(filtered_data)/0.6745)
         peaks = sp.signal.find_peaks(-filtered_data, height=-threshold)
+                
+    peaks = peaks[0]
         
-    return peaks[0], threshold
-
-peak_indices, threshold = peak_detection(filtered_data,inverted,threshold_slider)
-
-##################################################################################################################
-
-fig = go.Figure(data=go.Scatter(
-    x = t, 
-    y = filtered_data, 
-    mode = 'lines',
-    name='Filtered Data',
-    line = dict(color='darkgreen'),
-    showlegend=False))
-
-fig.add_trace(go.Scatter(
-    x=peak_indices/fs,
-    y=[filtered_data[j] for j in peak_indices],
-    mode='markers',
-    marker = dict(color = 'red'),
-    showlegend=False))
-
-fig.add_shape(type='line',
-              x0=t_start,x1=t_stop,
-              y0=threshold,y1=threshold,
-              line = dict(color='black'),
-              name='Threshold')
-
-#fig.update_layout(xaxis=dict(rangeslider=dict(visible=True),type="-"))
-
-st.plotly_chart(fig)
-
-##################################################################################################################
+    return peaks, threshold
 
 @st.cache
-def get_spikes(peak_indices, spike_window_ms):
-    
-    spike_window = int(spike_window_ms*10**-3*fs)
+def get_spikes(filtered_data, peak_indices, spike_window):
     
     peak_indices = peak_indices[(peak_indices > spike_window) & (peak_indices < peak_indices[-1] - spike_window)]
     spikes = np.empty([1, spike_window*2])
@@ -129,14 +70,6 @@ def get_spikes(peak_indices, spike_window_ms):
     
     return peak_indices, spikes
 
-peak_indices, spikes = get_spikes(peak_indices, 1)
-
-##################################################################################################################
-
-st.subheader('Spike Sorting')
-
-sorting_required = st.checkbox('Is spike sorting required?')
-
 @st.cache
 def spike_sorting(spikes,clusters):
     
@@ -147,60 +80,8 @@ def spike_sorting(spikes,clusters):
     labels = kmeans.labels_
     
     return features, labels
-    
-if sorting_required == True:
-        
-    clusters = st.selectbox('How many clusters are there?',range(2,7))    
-    
-    features, labels = spike_sorting(spikes,clusters)
-        
-    colour_list = list(['red','blue','orange','cyan','magenta','yellow'])
-    colour_label = np.array(colour_list)[labels]
-        
-    fig2 = go.Figure(go.Scatter(
-        x = features[:,0],
-        y = features[:,1],
-        mode = 'markers',
-        marker = dict(color = colour_label)))
-        
-    st.plotly_chart(fig2)
-        
-    fig3 = go.Figure(go.Scatter(
-        x = t, 
-        y = filtered_data, 
-        mode = 'lines',
-        name='Filtered Data',
-        line = dict(color='darkgreen'),
-        showlegend=False))
-        
-    fig3.add_trace(go.Scatter(
-        x=peak_indices/fs,
-        y=[filtered_data[j] for j in peak_indices],
-        mode='markers',
-        marker = dict(color = colour_label),
-        showlegend=False))
-        
-    st.plotly_chart(fig3)
-        
-    desired_clusters = st.selectbox('Select Desired Cluster',colour_list[0:clusters])
-        
-    silhouette = silhouette_score(features,labels)
-        
-    peak_indices = np.array(peak_indices[colour_label == desired_clusters])
-    spikes = spikes[colour_label == desired_clusters]
-        
-else:
-    desired_clusters = 'red'
-    labels = np.zeros(len(peak_indices),dtype='int32')
-    colour_label = np.array(list(['red']))[labels]
-    silhouette = np.nan
-    clusters = 1
 
-##################################################################################################################
-
-spiketrain = peak_indices/fs
-
-@st.cache    
+@st.cache  
 def snr(spikes):
     
     S_avg = np.matrix(spikes).mean(axis=0)
@@ -219,12 +100,6 @@ def snr(spikes):
         
     return snr
 
-snr_value = float(snr(spikes))
-num_spikes = int(len(spiketrain))
-firing_rate = float(len(spiketrain)/(t_stop - t_start))
-
-##################################################################################################################
-
 @st.cache
 def isi_func(spiketrain):
     isi = []
@@ -233,27 +108,8 @@ def isi_func(spiketrain):
         
     return np.array(isi)
 
-isi = isi_func(spiketrain)
-isi_mean = isi.mean()
-
-n_bins = round((isi.max() - isi.min())/(10**-3))
-hist_values = np.histogram(isi,bins=n_bins)
-hist_x = hist_values[0]
-hist_y = hist_values[1]
-isi_mode = hist_y[np.where(hist_x == hist_x.max())]
-
-# df_isi = pd.DataFrame(isi)
-# df_isi.columns = ['ISI'+ ' of ' + desired_clusters]
-# st.subheader('Inter-spike interval')
-# fig5 = px.histogram(df_isi,nbins=n_bins)
-# st.plotly_chart(fig5)
-
-percent_isi_violations = (sum(isi < 1/1000)/len(isi))*100
-
-##################################################################################################################
-
 @st.cache
-def burst_calc_srdjan(spiketrain):
+def burst_calc_srdjan(spiketrain, isi, isi_mean):
 
     burst_logical = []
     prev_burst = False
@@ -282,11 +138,7 @@ def burst_calc_srdjan(spiketrain):
             burst_logical.append(True)
             intra_bi.append(spiketrain[i])
     
-
-    
     return intra_bi, inter_bi, burst_logical
-
-#intra_bi, inter_bi, burst_logical = burst_calc_srdjan(spiketrain)
 
 @st.cache
 def burst_calc_luka(peaks, fs_data01, burst_th, spike_freq, t_start, t_stop, num_spikes):
@@ -321,80 +173,216 @@ def burst_calc_luka(peaks, fs_data01, burst_th, spike_freq, t_start, t_stop, num
     
     return burst_freq, spike_freq/burst_freq, intra_burst_count
 
-burst_freq, burst_index, intra_burst_count = burst_calc_luka(spiketrain, fs, 1.5, firing_rate, t_start, t_stop, num_spikes)
+def main(f):
+    
+    g = io.BytesIO(f.read())
+    
+    temploc = f.name
+    
+    with open(temploc, 'wb') as out:
+        out.write(g.read())
+        
+        
+    raw_data, fs, t_start, t_stop, channel = import_raw_smr(f.name)
+    t = np.arange(t_start,t_stop,1/fs)
+    
+    lowpass_left, highpass_right = st.beta_columns(2)
+    lowpass_fs = lowpass_left.number_input('Lowpass Frequency Cutoff',0,1500,300,100)
+    highpass_fs = highpass_right.number_input('Highpass Frequency Cutoff',2000,6000,3000,100)
+    
+    filtered_data = bandpass_filter(raw_data, lowpass_fs, highpass_fs, fs)
+    
+    left_inverted, dummy1,dummy2 = st.beta_columns(3)
+    inverted = left_inverted.checkbox('Invert Peaks')
+    threshold_slider = st.slider('Median Absolute Deviations (Noise Estimate)',1,20,4)
+    
+    peak_indices, threshold = peak_detection(filtered_data,inverted,threshold_slider)
+    
+    
+    fig = go.Figure(data=go.Scatter(
+        x = t, 
+        y = filtered_data, 
+        mode = 'lines',
+        name='Filtered Data',
+        line = dict(color='darkgreen'),
+        showlegend=False))
+    
+    fig.add_trace(go.Scatter(
+        x=peak_indices/fs,
+        y=[filtered_data[j] for j in peak_indices],
+        mode='markers',
+        marker = dict(color = 'red'),
+        showlegend=False))
+    
+    fig.add_shape(type='line',
+                  x0=t_start,x1=t_stop,
+                  y0=threshold,y1=threshold,
+                  line = dict(color='black'),
+                  name='Threshold')
+    
+    #fig.update_layout(xaxis=dict(rangeslider=dict(visible=True),type="-"))
+    
+    st.plotly_chart(fig)
+    
+    peak_indices, spikes = get_spikes(filtered_data, peak_indices, int(1*10**-3*fs))
+    
+    st.subheader('Spike Sorting')
+    
+    sorting_required = st.checkbox('Is spike sorting required?')
+    
+    if sorting_required == True:
+            
+        clusters = st.selectbox('How many clusters are there?',range(2,7))    
+        
+        features, labels = spike_sorting(spikes,clusters)
+            
+        colour_list = list(['red','blue','orange','cyan','magenta','yellow'])
+        colour_label = np.array(colour_list)[labels]
+            
+        fig2 = go.Figure(go.Scatter(
+            x = features[:,0],
+            y = features[:,1],
+            mode = 'markers',
+            marker = dict(color = colour_label)))
+            
+        st.plotly_chart(fig2)
+            
+        fig3 = go.Figure(go.Scatter(
+            x = t, 
+            y = filtered_data, 
+            mode = 'lines',
+            name='Filtered Data',
+            line = dict(color='darkgreen'),
+            showlegend=False))
+            
+        fig3.add_trace(go.Scatter(
+            x=peak_indices/fs,
+            y=[filtered_data[j] for j in peak_indices],
+            mode='markers',
+            marker = dict(color = colour_label),
+            showlegend=False))
+            
+        st.plotly_chart(fig3)
+            
+        desired_clusters = st.selectbox('Select Desired Cluster',colour_list[0:clusters])
+            
+        silhouette = silhouette_score(features,labels)
+            
+        peak_indices = np.array(peak_indices[colour_label == desired_clusters])
+        spikes = spikes[colour_label == desired_clusters]
+            
+    else:
+        desired_clusters = 'red'
+        labels = np.zeros(len(peak_indices),dtype='int32')
+        colour_label = np.array(list(['red']))[labels]
+        silhouette = np.nan
+        clusters = 1
+        
+        
+    spiketrain = peak_indices/fs
+    
+    snr_value = float(snr(spikes))
+    num_spikes = int(len(spiketrain))
+    firing_rate = float(len(spiketrain)/(t_stop - t_start))
+    
+    isi = isi_func(spiketrain)
+    isi_mean = isi.mean()
+    
+    n_bins = round((isi.max() - isi.min())/(10**-3))
+    hist_values = np.histogram(isi,bins=n_bins)
+    hist_x = hist_values[0]
+    hist_y = hist_values[1]
+    isi_mode = hist_y[np.where(hist_x == hist_x.max())]
+    
+    # df_isi = pd.DataFrame(isi)
+    # df_isi.columns = ['ISI'+ ' of ' + desired_clusters]
+    # st.subheader('Inter-spike interval')
+    # fig5 = px.histogram(df_isi,nbins=n_bins)
+    # st.plotly_chart(fig5)
+    
+    percent_isi_violations = (sum(isi < 1/1000)/len(isi))*100
+    
+    #intra_bi, inter_bi, burst_logical = burst_calc_srdjan(spiketrain)
+    
+    burst_freq, burst_index, intra_burst_count = burst_calc_luka(spiketrain, fs, 1.5, firing_rate, t_start, t_stop, num_spikes)
+    
+    # st.subheader('Bursting Spikes')
+    
+    # fig3 = go.Figure(go.Scatter(
+    #     x = t, 
+    #     y = filtered_data, 
+    #     mode = 'lines',
+    #     name='Filtered Data',
+    #     line = dict(color='darkgreen'),
+    #     showlegend=False))
+    
+    # peak_indices = np.delete(peak_indices,0,axis=0)
+    
+    # fig3.add_trace(go.Scatter(
+    #     x=peak_indices[burst_logical]/fs,
+    #     y=[filtered_data[j] for j in peak_indices[burst_logical]],
+    #     mode='markers',
+    #     marker = dict(color = 'black'),
+    #     showlegend=False))
+    
+    # st.plotly_chart(fig3)
+    
+    
+    st.sidebar.subheader('Spiking Features')
+    
+    val1 = num_spikes
+    val2 = round(float(firing_rate),2)
+    val3 = round(snr_value,2)
+    val4 = round(percent_isi_violations,2)
+    val5 = round(silhouette,2)
+    val6 = round(burst_freq,2)
+    val7 = round(isi_mean/isi_mode[0],2)
+    val8 = round(intra_burst_count/num_spikes*100,2)
+    val9 = channel
+    val10 = lowpass_fs
+    val11 = highpass_fs
+    val12 = clusters
+    val13 = inverted
+    val14 = desired_clusters
+    val15 = round(t_stop - t_start,2)
+    
+    name1 = 'Number of Spikes'
+    name2 = 'Firing Rate (Hz)'
+    name3 = 'SNR'
+    name4 = 'ISI Violations (%)'
+    name5 = 'Silhouette Score'
+    name6 = 'Mean Burst Frequency (Hz)'
+    name7 = 'Burst Index'
+    name8 = 'Spikes in Burst (%)'
+    name9 = 'Channel'
+    name10 = 'Lowpass Cutoff (Hz)'
+    name11 = 'Highpass Cutoff (Hz)'
+    name12 = 'Number of Clusters'
+    name13 = 'Invert Peaks?'
+    name14 = 'Desired Cluster'
+    name15 = 'Segment Duration (s)'
+    
+    st.sidebar.write(name1, val1)
+    st.sidebar.write(name2, val2)
+    st.sidebar.write(name3, val3)
+    st.sidebar.write(name4, val4)
+    st.sidebar.write(name5, val5)
+    st.sidebar.write(name6, val6)
+    st.sidebar.write(name7, val7)
+    st.sidebar.write(name8, val8)
+    st.sidebar.write(name9, val9)
+    st.sidebar.write(name10, val10)
+    st.sidebar.write(name11, val11)
+    st.sidebar.write(name12, val12)
+    st.sidebar.write(name13, val13)
+    st.sidebar.write(name14, val14)
+    st.sidebar.write(name15, val15)
+    
+    os.remove(temploc)
 
-# st.subheader('Bursting Spikes')
+st.title('Neural Segments App')
+    
+f = st.file_uploader('Select smr file to upload','smr',False)
 
-# fig3 = go.Figure(go.Scatter(
-#     x = t, 
-#     y = filtered_data, 
-#     mode = 'lines',
-#     name='Filtered Data',
-#     line = dict(color='darkgreen'),
-#     showlegend=False))
-
-# peak_indices = np.delete(peak_indices,0,axis=0)
-
-# fig3.add_trace(go.Scatter(
-#     x=peak_indices[burst_logical]/fs,
-#     y=[filtered_data[j] for j in peak_indices[burst_logical]],
-#     mode='markers',
-#     marker = dict(color = 'black'),
-#     showlegend=False))
-
-# st.plotly_chart(fig3)
-
-##################################################################################################################
-
-st.sidebar.subheader('Spiking Features')
-
-
-val1 = num_spikes
-val2 = round(float(firing_rate),2)
-val3 = round(snr_value,2)
-val4 = round(percent_isi_violations,2)
-val5 = round(silhouette,2)
-val6 = round(burst_freq,2)
-val7 = round(isi_mean/isi_mode[0],2)
-val8 = round(intra_burst_count/num_spikes*100,2)
-val9 = channel
-val10 = lowpass_fs
-val11 = highpass_fs
-val12 = clusters
-val13 = inverted
-val14 = desired_clusters
-val15 = round(t_stop - t_start,2)
-
-name1 = 'Number of Spikes'
-name2 = 'Firing Rate (Hz)'
-name3 = 'SNR'
-name4 = 'ISI Violations (%)'
-name5 = 'Silhouette Score'
-name6 = 'Mean Burst Frequency (Hz)'
-name7 = 'Burst Index'
-name8 = 'Spikes in Burst (%)'
-name9 = 'Channel'
-name10 = 'Lowpass Cutoff (Hz)'
-name11 = 'Highpass Cutoff (Hz)'
-name12 = 'Number of Clusters'
-name13 = 'Invert Peaks?'
-name14 = 'Desired Cluster'
-name15 = 'Segment Duration (s)'
-
-st.sidebar.write(name1, val1)
-st.sidebar.write(name2, val2)
-st.sidebar.write(name3, val3)
-st.sidebar.write(name4, val4)
-st.sidebar.write(name5, val5)
-st.sidebar.write(name6, val6)
-st.sidebar.write(name7, val7)
-st.sidebar.write(name8, val8)
-st.sidebar.write(name9, val9)
-st.sidebar.write(name10, val10)
-st.sidebar.write(name11, val11)
-st.sidebar.write(name12, val12)
-st.sidebar.write(name13, val13)
-st.sidebar.write(name14, val14)
-st.sidebar.write(name15, val15)
-
-os.remove(temploc)
+if f is not None:
+    main(f)    
