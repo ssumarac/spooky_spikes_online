@@ -59,6 +59,7 @@ lowpass_left, highpass_right = st.beta_columns(2)
 lowpass_fs = lowpass_left.number_input('Lowpass Frequency Cutoff',0,1500,300,100)
 highpass_fs = highpass_right.number_input('Highpass Frequency Cutoff',2000,6000,3000,100)
 
+@st.cache
 def bandpass_filter(raw_data, lowpass_fs, highpass_fs, fs):
     return el.signal_processing.butter(raw_data, highpass_frequency=lowpass_fs, lowpass_frequency=highpass_fs, order=4, filter_function='filtfilt', sampling_frequency=fs, axis=- 1)
 
