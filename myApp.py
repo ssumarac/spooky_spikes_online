@@ -389,7 +389,7 @@ def main():
 st.title('Neural Segments App')
     
 f = st.file_uploader('Select smr file to upload','smr',False)
-st.write(os.getcwd())
+#st.write(os.getcwd())
 
 if f is not None:
     filename = upload_smr_file(f)
