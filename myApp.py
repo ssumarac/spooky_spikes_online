@@ -1,6 +1,5 @@
 import streamlit as st
 import neo.io
-import os
 import numpy as np
 import plotly.graph_objects as go
 import pandas as pd
@@ -9,34 +8,25 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 import plotly.express as px
 from sklearn.metrics import silhouette_score
+import openpyxl
 import elephant as el
+import io
+import os
 
 ##################################################################################################################
 
 st.title('Neural Segments App')
 
-def file_selector(folder_path='.'):
-    filenames = []
+f = st.sidebar.file_uploader('Select smr file to upload','smr',False)
 
-    for file in os.listdir(folder_path):
-        if file.endswith('.smr'):
-          filenames.append(file)
-        
-    filenames.sort()
- 
-    selected_filename = st.selectbox('Select a file', filenames)
-    return os.path.join(folder_path, selected_filename)
+g = io.BytesIO(f.read())
 
-sidebar_filename = file_selector()
+temploc = f.name
+
+with open(temploc, 'wb') as out:
+    out.write(g.read())
 
 ##################################################################################################################
-
-press = st.sidebar.button('Save Spiking Features!')
-
-if press == True:
-    st.sidebar.success('Data saved!')
-
-st.subheader('Peak Detection')
 
 @st.cache
 def import_raw_smr(filename):
@@ -63,7 +53,7 @@ def import_raw_smr(filename):
         raw_data = np.array(analogsignals[idx],dtype='float64').transpose()
         return raw_data[0], float(analogsignals[idx].sampling_rate), float(analogsignals[idx].t_start), float(analogsignals[idx].t_stop),2
 
-raw_data, fs, t_start, t_stop, channel = import_raw_smr(sidebar_filename)
+raw_data, fs, t_start, t_stop, channel = import_raw_smr(f.name)
 t = np.arange(t_start,t_stop,1/fs)
 
 lowpass_left, highpass_right = st.beta_columns(2)
@@ -260,6 +250,7 @@ percent_isi_violations = (sum(isi < 1/1000)/len(isi))*100
 
 ##################################################################################################################
 
+@st.cache
 def burst_calc_srdjan(spiketrain):
 
     burst_logical = []
@@ -356,7 +347,6 @@ burst_freq, burst_index, intra_burst_count = burst_calc_luka(spiketrain, fs, 1.5
 st.sidebar.subheader('Spiking Features')
 
 
-val0 = sidebar_filename
 val1 = num_spikes
 val2 = round(float(firing_rate),2)
 val3 = round(snr_value,2)
@@ -373,7 +363,6 @@ val13 = inverted
 val14 = desired_clusters
 val15 = round(t_stop - t_start,2)
 
-name0 = 'Filename'
 name1 = 'Number of Spikes'
 name2 = 'Firing Rate (Hz)'
 name3 = 'SNR'
@@ -406,6 +395,4 @@ st.sidebar.write(name13, val13)
 st.sidebar.write(name14, val14)
 st.sidebar.write(name15, val15)
 
-df_statistics = pd.DataFrame([val0, val1, val2, val3, val4, val5, val6, val7, val8, val9, val10, val11, val12, val13, val14, val15]).T
-df_statistics.index = [sidebar_filename]
-df_statistics.columns = [name0, name1, name2, name3, name4, name5, name6, name7, name8, name9, name10, name11, name12, name13, name14, name15]                 
+os.remove(temploc)
