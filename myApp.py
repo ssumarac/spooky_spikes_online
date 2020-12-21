@@ -13,6 +13,17 @@ import io
 import os
 
 @st.cache
+def upload_smr_file(f):
+    
+    filename = f.name
+    f_bytes = io.BytesIO(f.read())
+    
+    with open(filename, 'wb') as out:
+        out.write(f_bytes.read())
+        
+    return filename
+    
+@st.cache
 def import_raw_smr(filename):
     
     reader = neo.io.Spike2IO(filename)
@@ -172,17 +183,9 @@ def burst_calc_luka(peaks, fs_data01, burst_th, spike_freq, t_start, t_stop, num
     
     return burst_freq, spike_freq/burst_freq, intra_burst_count
 
-def main(f):
+def main():
     
-    g = io.BytesIO(f.read())
-    
-    temploc = f.name
-    
-    with open(temploc, 'wb') as out:
-        out.write(g.read())
-        
-        
-    raw_data, fs, t_start, t_stop, channel = import_raw_smr(f.name)
+    raw_data, fs, t_start, t_stop, channel = import_raw_smr(filename)
     t = np.arange(t_start,t_stop,1/fs)
     
     lowpass_left, highpass_right = st.beta_columns(2)
@@ -382,13 +385,15 @@ def main(f):
     st.sidebar.write(name13, val13)
     st.sidebar.write(name14, val14)
     st.sidebar.write(name15, val15)
-    
-    os.remove(temploc)
 
 st.title('Neural Segments App')
     
 f = st.file_uploader('Select smr file to upload','smr',False)
 
-
 if f is not None:
-    main(f)    
+    filename = upload_smr_file(f)
+    main()
+    
+    if os.path.isfile(filename):
+        os.remove(filename)   
+    
