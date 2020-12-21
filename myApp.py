@@ -8,7 +8,6 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 import plotly.express as px
 from sklearn.metrics import silhouette_score
-import openpyxl
 import elephant as el
 import io
 import os
