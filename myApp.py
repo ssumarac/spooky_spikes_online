@@ -186,8 +186,8 @@ def main(f):
     t = np.arange(t_start,t_stop,1/fs)
     
     lowpass_left, highpass_right = st.beta_columns(2)
-    lowpass_fs = lowpass_left.number_input('Lowpass Frequency Cutoff',0,1500,300,100)
-    highpass_fs = highpass_right.number_input('Highpass Frequency Cutoff',2000,6000,3000,100)
+    lowpass_fs = lowpass_left.number_input('Highpass Frequency Cutoff',0,1500,300,100)
+    highpass_fs = highpass_right.number_input('Lowpass Frequency Cutoff',2000,6000,3000,100)
     
     filtered_data = bandpass_filter(raw_data, lowpass_fs, highpass_fs, fs)
     
@@ -196,7 +196,6 @@ def main(f):
     threshold_slider = st.slider('Median Absolute Deviations (Noise Estimate)',1,20,4)
     
     peak_indices, threshold = peak_detection(filtered_data,inverted,threshold_slider)
-    
     
     fig = go.Figure(data=go.Scatter(
         x = t, 
@@ -221,7 +220,7 @@ def main(f):
     
     #fig.update_layout(xaxis=dict(rangeslider=dict(visible=True),type="-"))
     
-    st.plotly_chart(fig)
+    fig_update = st.plotly_chart(fig)
     
     peak_indices, spikes = get_spikes(filtered_data, peak_indices, int(1*10**-3*fs))
     
@@ -230,6 +229,7 @@ def main(f):
     sorting_required = st.checkbox('Is spike sorting required?')
     
     if sorting_required == True:
+        fig_update.empty()
             
         clusters = st.selectbox('How many clusters are there?',range(2,7))    
         
@@ -260,7 +260,13 @@ def main(f):
             mode='markers',
             marker = dict(color = colour_label),
             showlegend=False))
-            
+        
+        fig3.add_shape(type='line',
+            x0=t_start,x1=t_stop,
+            y0=threshold,y1=threshold,
+            line = dict(color='black'),
+            name='Threshold')
+        
         st.plotly_chart(fig3)
             
         desired_clusters = st.selectbox('Select Desired Cluster',colour_list[0:clusters])
@@ -382,6 +388,7 @@ def main(f):
 st.title('Neural Segments App')
     
 f = st.file_uploader('Select smr file to upload','smr',False)
+
 
 if f is not None:
     main(f)    
