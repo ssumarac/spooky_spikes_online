@@ -394,4 +394,4 @@ st.sidebar.write(name13, val13)
 st.sidebar.write(name14, val14)
 st.sidebar.write(name15, val15)
 
-os.remove(temploc)
+#os.remove(temploc)
