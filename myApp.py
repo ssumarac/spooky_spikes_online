@@ -261,7 +261,7 @@ def main(f):
             marker = dict(color = colour_label),
             showlegend=False))
             
-        st.plotly_chart(fig3)
+        fig.plotly_chart(fig3)
             
         desired_clusters = st.selectbox('Select Desired Cluster',colour_list[0:clusters])
             
