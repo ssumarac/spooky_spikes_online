@@ -338,37 +338,28 @@ def main():
     
     st.sidebar.subheader('Spiking Features')
     
-    val1 = num_spikes
-    val2 = round(float(firing_rate),2)
-    val3 = round(snr_value,2)
-    val4 = round(percent_isi_violations,2)
-    val5 = round(silhouette,2)
-    val6 = round(burst_freq,2)
-    val7 = round(isi_mean/isi_mode[0],2)
-    val8 = round(intra_burst_count/num_spikes*100,2)
-    val9 = channel
-    val10 = lowpass_fs
-    val11 = highpass_fs
-    val12 = clusters
-    val13 = inverted
-    val14 = desired_clusters
-    val15 = round(t_stop - t_start,2)
+    val1 = round(t_stop - t_start,2)
+    val2 = channel
+    val3 = num_spikes
+    val4 = round(float(firing_rate),2)
+    val5 = round(snr_value,2)
+    val6 = round(percent_isi_violations,2)
+    val7 = round(silhouette,2)
+    val8 = round(burst_freq,2)
+    val9 = round(isi_mean/isi_mode[0],2)
+    val10 = round(intra_burst_count/num_spikes*100,2)
     
-    name1 = 'Number of Spikes'
-    name2 = 'Firing Rate (Hz)'
-    name3 = 'SNR'
-    name4 = 'ISI Violations (%)'
-    name5 = 'Silhouette Score'
-    name6 = 'Mean Burst Frequency (Hz)'
-    name7 = 'Burst Index'
-    name8 = 'Spikes in Burst (%)'
-    name9 = 'Channel'
-    name10 = 'Highpass Cutoff (Hz)'
-    name11 = 'Lowpass Cutoff (Hz)'
-    name12 = 'Number of Clusters'
-    name13 = 'Invert Peaks?'
-    name14 = 'Desired Cluster'
-    name15 = 'Segment Duration (s)'
+    name1 = 'Channel'
+    name2 = 'Segment Duration (s)'
+    name3 = 'Number of Spikes'
+    name4 = 'Firing Rate (Hz)'
+    name5 = 'SNR'
+    name6 = 'ISI Violations (%)'
+    name7 = 'Silhouette Score'
+    name8 = 'Mean Burst Frequency (Hz)'
+    name9 = 'Burst Index'
+    name10 = 'Spikes in Burst (%)'
+    
     
     st.sidebar.write(name1, val1)
     st.sidebar.write(name2, val2)
@@ -380,11 +371,6 @@ def main():
     st.sidebar.write(name8, val8)
     st.sidebar.write(name9, val9)
     st.sidebar.write(name10, val10)
-    st.sidebar.write(name11, val11)
-    st.sidebar.write(name12, val12)
-    st.sidebar.write(name13, val13)
-    st.sidebar.write(name14, val14)
-    st.sidebar.write(name15, val15)
 
 st.title('Neural Segments App')
     
