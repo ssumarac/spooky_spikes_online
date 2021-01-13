@@ -338,8 +338,8 @@ def main():
     
     st.sidebar.subheader('Spiking Features')
     
-    val1 = round(t_stop - t_start,2)
-    val2 = channel
+    val1 = channel
+    val2 = round(t_stop - t_start,2)
     val3 = num_spikes
     val4 = round(float(firing_rate),2)
     val5 = round(snr_value,2)
