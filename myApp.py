@@ -34,19 +34,18 @@ def import_raw_smr(filename):
     
     analogsignals = segments.analogsignals
 
-    channel_id = []
+    channels = []
     for i in range(len(analogsignals)):
-        channel_id.append(analogsignals[i].annotations['channel_id'])
-    
-    if (0 in channel_id) == True:
-        idx = channel_id.index(0)
-        raw_data = np.array(analogsignals[idx],dtype='float64').transpose()
-        return raw_data[0], float(analogsignals[idx].sampling_rate), float(analogsignals[idx].t_start), float(analogsignals[idx].t_stop),1
-    
-    elif (1 in channel_id) == True:
-        idx = channel_id.index(1)
-        raw_data = np.array(analogsignals[idx],dtype='float64').transpose()
-        return raw_data[0], float(analogsignals[idx].sampling_rate), float(analogsignals[idx].t_start), float(analogsignals[idx].t_stop),2
+        channels.append(analogsignals[i].annotations['channel_id'])
+
+    channel_id = np.array(channels).argmin()
+
+    raw_data = np.array(analogsignals[channel_id],dtype='float64').transpose()[0]
+    fs = float(analogsignals[channel_id].sampling_rate)
+    t_start = float(analogsignals[channel_id].t_start)
+    t_stop = float(analogsignals[channel_id].t_stop)
+
+    return raw_data, fs, t_start, t_stop, channel_id+1
 
 @st.cache
 def bandpass_filter(raw_data, lowpass_fs, highpass_fs, fs):
