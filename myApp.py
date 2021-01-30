@@ -380,9 +380,8 @@ f = st.file_uploader('Select smr file to upload','smr',False)
 if f is not None:
     filename = upload_smr_file(f)
     main()
-    
-    arr = os.listdir()    
-    st.write(arr)
+
+    #st.write(os.listdir())
     
     if os.path.isfile(filename):
         os.remove(filename)   
