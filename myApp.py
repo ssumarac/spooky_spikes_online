@@ -381,7 +381,7 @@ if f is not None:
     filename = upload_smr_file(f)
     main()
 
-    st.write(os.listdir())
+    #st.write(os.listdir())
     
     if os.path.isfile(filename):
         os.remove(filename)   
