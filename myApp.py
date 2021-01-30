@@ -381,11 +381,7 @@ if f is not None:
     filename = upload_smr_file(f)
     main()
     
-    arr = os.listdir()
-    os.remove("2988-r-220.smr")
-    os.remove("3043-s2-553.smr")
-    os.remove("3043-s2-526.smr")
-    
+    arr = os.listdir()    
     st.write(arr)
     
     if os.path.isfile(filename):
