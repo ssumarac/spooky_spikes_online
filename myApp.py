@@ -382,7 +382,7 @@ if f is not None:
     main()
     
     arr = os.listdir()
-    print(arr)
+    st.write(arr)
     
     if os.path.isfile(filename):
         os.remove(filename)   
