@@ -51,11 +51,11 @@ def import_raw_smr(filename):
         raw_data = np.array(analogsignals[idx],dtype='float64').transpose()
         return raw_data[0], float(analogsignals[idx].sampling_rate), float(analogsignals[idx].t_start), float(analogsignals[idx].t_stop),2
 
-@st.experimental_memo
+@st.cache
 def bandpass_filter(raw_data, lowpass_fs, highpass_fs, fs):
     return el.signal_processing.butter(raw_data, highpass_frequency=lowpass_fs, lowpass_frequency=highpass_fs, order=4, filter_function='filtfilt', sampling_frequency=fs, axis=- 1)
 
-@st.experimental_memo
+@st.cache
 def peak_detection(filtered_data,inverted,threshold_slider):
     
     if inverted == True:
@@ -70,7 +70,7 @@ def peak_detection(filtered_data,inverted,threshold_slider):
         
     return peaks, threshold
 
-@st.experimental_memo
+@st.cache
 def get_spikes(filtered_data, peak_indices, spike_window):
     
     peak_indices = peak_indices[(peak_indices > spike_window) & (peak_indices < peak_indices[-1] - spike_window)]
@@ -83,7 +83,7 @@ def get_spikes(filtered_data, peak_indices, spike_window):
     
     return peak_indices, spikes
 
-@st.experimental_memo
+@st.cache
 def spike_sorting(spikes,clusters):
     
     pca = PCA(n_components = 2)
