@@ -51,6 +51,7 @@ def import_raw_smr(filename):
         raw_data = np.array(analogsignals[idx],dtype='float64').transpose()
         return raw_data[0], float(analogsignals[idx].sampling_rate), float(analogsignals[idx].t_start), float(analogsignals[idx].t_stop),2
 
+@st.cache
 def bandpass_filter(raw_data, lowpass_fs, highpass_fs, fs):
     return el.signal_processing.butter(raw_data, highpass_frequency=lowpass_fs, lowpass_frequency=highpass_fs, order=4, filter_function='filtfilt', sampling_frequency=fs, axis=- 1)
 
