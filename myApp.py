@@ -95,15 +95,15 @@ def spike_sorting(spikes,clusters):
 
 def main():
     
-    FilePath = os.getcwd() + "/" + f
+    FilePath = os.getcwd() + "/" + f.name
     st.write(FilePath)
 
-    get_channel_list = get_channel_list(FilePath)
+    channel_list = get_channel_list(FilePath)
     
-    channel = st.selectbox("Select Channel",get_channel_list)
-    channel_index = get_channel_list.index(channel)
+    channel = st.selectbox("Select Channel",channel_list)
+    select_channel = channel_list.index(channel)
 
-    raw_data_full, fs, t_start, t_stop = import_raw_smr(filename, channel_index)
+    raw_data_full, fs, t_start, t_stop = import_raw_smr(filename, select_channel)
     t_full = np.arange(t_start,t_stop,1/fs)
 
     tFrom_to_tTo = st.text_input("Enter tFrom to tTo in the following format: tFrom,tTo", str(0)+","+str(floor(t_stop)))
