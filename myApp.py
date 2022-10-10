@@ -14,6 +14,7 @@ import elephant as el
 from math import floor
 from scipy.signal import welch, find_peaks
 from scipy import signal
+from sonpy import lib as sonp
 
 @st.cache
 def upload_smr_file(f):
@@ -28,7 +29,7 @@ def upload_smr_file(f):
 
 @st.cache
 def get_channel_list(filename):
-    data = sp.SonFile(sName=filename, bReadOnly=True)
+    data = sonp.SonFile(sName=filename, bReadOnly=True)
     channel_list = [f'Channel {i + 1} ({str(data.ChannelType(i)).split(".")[-1]})' for i in range(data.MaxChannels())]
     return channel_list
 
