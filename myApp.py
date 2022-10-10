@@ -96,6 +96,7 @@ def spike_sorting(spikes,clusters):
 def main():
     
     FilePath = os.getcwd() + "/" + filename
+    st.write(FilePath)
 
     get_channel_list = get_channel_list(FilePath)
     
