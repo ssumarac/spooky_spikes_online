@@ -94,10 +94,8 @@ def spike_sorting(spikes,clusters):
     return features, labels
 
 def main():
-    
     FilePath = os.getcwd() + "/" + f.name
-    st.write(FilePath)
-
+    
     channel_list = get_channel_list(FilePath)
     
     channel = st.selectbox("Select Channel",channel_list)
