@@ -25,9 +25,15 @@ def upload_smr_file(f):
         out.write(f_bytes.read())
         
     return filename
-    
+
 @st.cache
-def import_raw_smr(filename):
+def get_channel_list(filename):
+    data = sp.SonFile(sName=filename, bReadOnly=True)
+    channel_list = [f'Channel {i + 1} ({str(data.ChannelType(i)).split(".")[-1]})' for i in range(data.MaxChannels())]
+    return channel_list
+
+@st.cache
+def import_raw_smr(filename, channel_index):
     
     reader = neo.io.Spike2IO(filename)
     
@@ -37,20 +43,12 @@ def import_raw_smr(filename):
     
     analogsignals = segments.analogsignals
 
-    channel_id = []
-    for i in range(len(analogsignals)):
-        channel_id.append(analogsignals[i].annotations['channel_id'])
+    raw_data = np.array(analogsignals[channel_index],dtype='float64').transpose()[0]
+    fs = float(analogsignals[channel_index].sampling_rate)
+    t_start = float(analogsignals[channel_index].t_start)
+    t_stop = float(analogsignals[channel_index].t_stop)
+    return raw_data, fs, t_start, t_stop
     
-    if (0 in channel_id) == True:
-        idx = channel_id.index(0)
-        raw_data = np.array(analogsignals[idx],dtype='float64').transpose()
-        return raw_data[0], float(analogsignals[idx].sampling_rate), float(analogsignals[idx].t_start), float(analogsignals[idx].t_stop),1
-    
-    elif (1 in channel_id) == True:
-        idx = channel_id.index(1)
-        raw_data = np.array(analogsignals[idx],dtype='float64').transpose()
-        return raw_data[0], float(analogsignals[idx].sampling_rate), float(analogsignals[idx].t_start), float(analogsignals[idx].t_stop),2
-
 @st.cache
 def bandpass_filter(raw_data, lowpass_fs, highpass_fs, fs):
     return el.signal_processing.butter(raw_data, highpass_frequency=lowpass_fs, lowpass_frequency=highpass_fs, order=4, filter_function='filtfilt', sampling_frequency=fs, axis=- 1)
@@ -96,7 +94,14 @@ def spike_sorting(spikes,clusters):
 
 def main():
     
-    raw_data_full, fs, t_start, t_stop, select_channel = import_raw_smr(filename)
+    FilePath = os.getcwd() + "/" + filename
+
+    get_channel_list = get_channel_list(FilePath)
+    
+    channel = st.selectbox("Select Channel",get_channel_list)
+    channel_index = get_channel_list.index(channel)
+
+    raw_data_full, fs, t_start, t_stop = import_raw_smr(filename, channel_index)
     t_full = np.arange(t_start,t_stop,1/fs)
 
     tFrom_to_tTo = st.text_input("Enter tFrom to tTo in the following format: tFrom,tTo", str(0)+","+str(floor(t_stop)))
