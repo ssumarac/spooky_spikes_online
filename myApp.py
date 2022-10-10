@@ -28,8 +28,8 @@ def upload_smr_file(f):
     return filename
 
 @st.cache
-def get_channel_list(filename):
-    data = sonp.SonFile(sName=filename, bReadOnly=True)
+def get_channel_list(FilePath):
+    data = sonp.SonFile(sName=FilePath, bReadOnly=True)
     channel_list = [f'Channel {i + 1} ({str(data.ChannelType(i)).split(".")[-1]})' for i in range(data.MaxChannels())]
     return channel_list
 
