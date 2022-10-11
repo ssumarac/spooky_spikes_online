@@ -681,29 +681,19 @@ def main():
     # st.sidebar.write(name10, val10)
     # st.sidebar.write(name11, val11)
 
-    with io.BytesIO() as buffer:
-        # Write array to buffer
-        np.save(buffer, raw_data)
-        btn = st.download_button(
-            label="Download numpy array (.npy)",
-            data = buffer, # Download buffer
-            file_name = 'predicted_map.npy'
-        ) 
+    with io.BytesIO() as new:
 
 
 
+        file = sp.SonFile(sName=FilePath, bReadOnly=True)
 
+        read_max_time = file.ChannelMaxTime(select_channel) * file.GetTimeBase()
 
-    def save_segment(self, events):
-        file = sp.SonFile(sName=self.read_filepath, bReadOnly=True)
-
-        read_max_time = file.ChannelMaxTime(self.channel) * file.GetTimeBase()
-
-        period = file.ChannelDivide(self.channel) * file.GetTimeBase()
+        period = file.ChannelDivide(select_channel) * file.GetTimeBase()
         num_points = math.floor(read_max_time / period)
 
         time_points = np.arange(0, num_points * period, period)
-        wave = file.ReadInts(self.channel, num_points, 0)
+        wave = file.ReadInts(select_channel, num_points, 0)
 
         if len(wave) == 0:
             print('There was no data read.')
@@ -712,19 +702,19 @@ def main():
             print(f'Mismatched number of points. Expected {num_points} points, but got {len(wave)} instead.')
             quit()
 
-        filename = self.save_filepath
+        filename = FilePath + "_SORTED"
         new = sp.SonFile(filename)
 
-        wave_offset = file.GetChannelOffset(self.channel)
-        wave_scale = file.GetChannelScale(self.channel)
+        wave_offset = file.GetChannelOffset(select_channel)
+        wave_scale = file.GetChannelScale(select_channel)
         wave_time_base = file.GetTimeBase()
-        wave_Y_range = file.GetChannelYRange(self.channel)
+        wave_Y_range = file.GetChannelYRange(select_channel)
         wave_Y_low = wave_Y_range[0]
         wave_Y_high = wave_Y_range[1]
-        wave_units = file.GetChannelUnits(self.channel)
-        wave_title = file.GetChannelTitle(self.channel)
-        wave_channel_type = file.ChannelType(self.channel)
-        wave_sample_ticks = file.ChannelDivide(self.channel)
+        wave_units = file.GetChannelUnits(select_channel)
+        wave_title = file.GetChannelTitle(select_channel)
+        wave_channel_type = file.ChannelType(select_channel)
+        wave_sample_ticks = file.ChannelDivide(select_channel)
         wave_Fs = 1 / period
         time_start = 0
 
@@ -750,7 +740,7 @@ def main():
         del new
 
         reload = sp.SonFile(filename, False)
-        if self.segment_inverted:
+        if inverted == True:
             wave = [-i for i in wave]
         write_wave = reload.WriteInts(new_wave_channel, wave, time_start)
 
@@ -760,7 +750,7 @@ def main():
         else:
             print('Waveform written successfully.')
 
-        spike_ticks = [int(i / wave_time_base) for i in events]
+        spike_ticks = [int(i / wave_time_base) for i in spiketrain]
         spike_times_formatted = np.array(spike_ticks, dtype=np.int64)
         write_train = reload.WriteEvents(spike_channel, spike_times_formatted)
 
@@ -774,7 +764,11 @@ def main():
 
         del reload
 
-        return status
+        btn = st.download_button(
+            label="Download numpy array (.smr)",
+            data = new, # Download buffer
+            file_name = 'predicted_map.smr'
+        ) 
 
 
 
