@@ -632,7 +632,7 @@ def main():
     st.sidebar.write(name10, val10)
     st.sidebar.write(name11, val11)
 
-st.title('TNBSanalyzer - By Srdjan Sumarac')
+st.title('Spooky Spikes Online')
     
 f = st.file_uploader('Select smr file to upload','smr',False)
 #st.write(os.getcwd())
