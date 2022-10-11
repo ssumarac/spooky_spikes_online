@@ -667,12 +667,14 @@ st.title('TNBS Spooky Spikes Online')
 
 st.info('By Srdjan Sumarac & Luka Zivkovic')
 st.image(Image.open('tnbs_logo.png'),width=150)
-    
-f = st.file_uploader('Select smr file to upload','smr',False)
-#st.write(os.getcwd())
 
-if f is not None:
-    if check_password():
+if check_password():
+    
+    f = st.file_uploader('Select smr file to upload','smr',False)
+    #st.write(os.getcwd())
+
+    if f is not None:
+        
         filename = upload_smr_file(f)
         main()
 
