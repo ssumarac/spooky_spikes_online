@@ -445,7 +445,18 @@ def main():
         snr_value = el.waveform_features.waveform_snr(spikes)
         percent_isi_violations = (sum(isi < 1/1000)/len(isi))*100
 
-        st.subheader('Spiketrain Features')
+        st.subheader('Quality Metrics')
+
+        col111, col222, col333 = st.columns(3)
+
+        with col111:
+            st.metric(label = "Signal to Noise Ratio", value = round(snr_value,2))
+        
+        with col222:
+            st.metric(label = "ISI Violations (%)", value = round(percent_isi_violations,2))
+
+        with col333:
+            st.metric(label = "Silhouette Score", value = round(silhouette,2))
 
         iqr = np.subtract(*np.percentile(isi, [75, 25]))
         
@@ -626,46 +637,46 @@ def main():
         with col333:
             st.metric(label = "Spike Amplitude Ratio", value = round(spike_amplitude_ratio,4))
 
-    st.sidebar.subheader('Sorting Metrics')
+    # st.sidebar.subheader('Sorting Metrics')
 
-    val1 = round(float(firing_rate),2)
-    val2 = round(snr_value,2)
-    val3 = round(percent_isi_violations,2)
-    val4 = round(silhouette,2)
-    val5 = channel_id
-    val6 = highpass_fs
-    val7 = lowpass_fs
-    val8 = clusters
-    val9 = inverted
-    val10 = threshold_slider
-    val11 = sorting_required
+    # val1 = round(float(firing_rate),2)
+    # val2 = round(snr_value,2)
+    # val3 = round(percent_isi_violations,2)
+    # val4 = round(silhouette,2)
+    # val5 = channel_id
+    # val6 = highpass_fs
+    # val7 = lowpass_fs
+    # val8 = clusters
+    # val9 = inverted
+    # val10 = threshold_slider
+    # val11 = sorting_required
     
-    name1 = 'Firing Rate (Hz)'
-    name2 = 'SNR'
-    name3 = 'ISI Violations (%)'
-    name4 = 'Silhouette Score'
-    name5 = 'Channel'
-    name6 = 'Highpass Cutoff (Hz)'
-    name7 = 'Lowpass Cutoff (Hz)'
-    name8 = 'Number of Clusters'
-    name9 = 'Invert Peaks?'
-    name10 = 'Threshold'
-    name11 = 'Spike Sorting Required?'
+    # name1 = 'Firing Rate (Hz)'
+    # name2 = 'SNR'
+    # name3 = 'ISI Violations (%)'
+    # name4 = 'Silhouette Score'
+    # name5 = 'Channel'
+    # name6 = 'Highpass Cutoff (Hz)'
+    # name7 = 'Lowpass Cutoff (Hz)'
+    # name8 = 'Number of Clusters'
+    # name9 = 'Invert Peaks?'
+    # name10 = 'Threshold'
+    # name11 = 'Spike Sorting Required?'
     
-    st.sidebar.metric(label = name1, value = val1)
-    st.sidebar.metric(label = name2, value = val2)
-    st.sidebar.metric(label = name3, value = val3)
-    st.sidebar.metric(label = name4, value = val4)
+    # st.sidebar.metric(label = name1, value = val1)
+    # st.sidebar.metric(label = name2, value = val2)
+    # st.sidebar.metric(label = name3, value = val3)
+    # st.sidebar.metric(label = name4, value = val4)
 
-    st.sidebar.subheader('Sorting Settings')
+    # st.sidebar.subheader('Sorting Settings')
 
-    st.sidebar.write(name5, val5)
-    st.sidebar.write(name6, val6)
-    st.sidebar.write(name7, val7)
-    st.sidebar.write(name8, val8)
-    st.sidebar.write(name9, val9)
-    st.sidebar.write(name10, val10)
-    st.sidebar.write(name11, val11)
+    # st.sidebar.write(name5, val5)
+    # st.sidebar.write(name6, val6)
+    # st.sidebar.write(name7, val7)
+    # st.sidebar.write(name8, val8)
+    # st.sidebar.write(name9, val9)
+    # st.sidebar.write(name10, val10)
+    # st.sidebar.write(name11, val11)
 
 st.title('TNBS Spooky Spikes Online')
 
