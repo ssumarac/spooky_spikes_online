@@ -1,6 +1,7 @@
 import streamlit as st
 st.set_page_config(page_title = "TNBS Spooky Spikes Online", page_icon = "tnbs_logo.png")
 
+from PIL import Image
 import neo.io
 import numpy as np
 import plotly.graph_objects as go
@@ -22,6 +23,34 @@ import math
 from scipy.signal import welch, find_peaks,peak_widths
 from sklearn.mixture import GaussianMixture
 from scipy.stats import median_abs_deviation
+
+def check_password():
+    """Returns `True` if the user had the correct password."""
+
+    def password_entered():
+        """Checks whether a password entered by the user is correct."""
+        if st.session_state["password"] == st.secrets["password"]:
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # don't store password
+        else:
+            st.session_state["password_correct"] = False
+
+    if "password_correct" not in st.session_state:
+        # First run, show input for password.
+        st.text_input(
+            "Password", type="password", on_change=password_entered, key="password"
+        )
+        return False
+    elif not st.session_state["password_correct"]:
+        # Password not correct, show input + error.
+        st.text_input(
+            "Password", type="password", on_change=password_entered, key="password"
+        )
+        st.error("Password incorrect")
+        return False
+    else:
+        # Password correct.
+        return True
 
 @st.cache
 def upload_smr_file(f):
@@ -636,35 +665,8 @@ def main():
 
 st.title('Spooky Spikes Online')
 
-def check_password():
-    """Returns `True` if the user had the correct password."""
-
-    def password_entered():
-        """Checks whether a password entered by the user is correct."""
-        if st.session_state["password"] == st.secrets["password"]:
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # don't store password
-        else:
-            st.session_state["password_correct"] = False
-
-    if "password_correct" not in st.session_state:
-        # First run, show input for password.
-        st.text_input(
-            "Password", type="password", on_change=password_entered, key="password"
-        )
-        return False
-    elif not st.session_state["password_correct"]:
-        # Password not correct, show input + error.
-        st.text_input(
-            "Password", type="password", on_change=password_entered, key="password"
-        )
-        st.error("Password incorrect")
-        return False
-    else:
-        # Password correct.
-        return True
-
-
+st.info('By Srdjan Sumarac & Luka Zivkovic')
+st.image(Image.open('tnbs_logo.png'),width=150)
     
 f = st.file_uploader('Select smr file to upload','smr',False)
 #st.write(os.getcwd())
