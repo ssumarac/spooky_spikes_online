@@ -663,7 +663,7 @@ def main():
     st.sidebar.write(name10, val10)
     st.sidebar.write(name11, val11)
 
-st.title('Spooky Spikes Online')
+st.title('TNBS Spooky Spikes Online')
 
 st.info('By Srdjan Sumarac & Luka Zivkovic')
 st.image(Image.open('tnbs_logo.png'),width=150)
