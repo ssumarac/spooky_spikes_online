@@ -681,92 +681,92 @@ def main():
     # st.sidebar.write(name10, val10)
     # st.sidebar.write(name11, val11)
 
-    with io.BytesIO() as new:
+    # with io.BytesIO() as new:
 
-        file = sp.SonFile(sName=FilePath, bReadOnly=True)
+    #     file = sp.SonFile(sName=FilePath, bReadOnly=True)
 
-        read_max_time = file.ChannelMaxTime(select_channel) * file.GetTimeBase()
+    #     read_max_time = file.ChannelMaxTime(select_channel) * file.GetTimeBase()
 
-        period = file.ChannelDivide(select_channel) * file.GetTimeBase()
-        num_points = math.floor(read_max_time / period)
+    #     period = file.ChannelDivide(select_channel) * file.GetTimeBase()
+    #     num_points = math.floor(read_max_time / period)
 
-        time_points = np.arange(0, num_points * period, period)
-        wave = file.ReadInts(select_channel, num_points, 0)
+    #     time_points = np.arange(0, num_points * period, period)
+    #     wave = file.ReadInts(select_channel, num_points, 0)
 
-        if len(wave) == 0:
-            print('There was no data read.')
-            quit()
-        elif len(wave) != num_points:
-            print(f'Mismatched number of points. Expected {num_points} points, but got {len(wave)} instead.')
-            quit()
+    #     if len(wave) == 0:
+    #         print('There was no data read.')
+    #         quit()
+    #     elif len(wave) != num_points:
+    #         print(f'Mismatched number of points. Expected {num_points} points, but got {len(wave)} instead.')
+    #         quit()
 
-        filename = FilePath + "_SORTED"
-        new = sp.SonFile(filename)
+    #     filename = FilePath + "_SORTED"
+    #     new = sp.SonFile(filename)
 
-        wave_offset = file.GetChannelOffset(select_channel)
-        wave_scale = file.GetChannelScale(select_channel)
-        wave_time_base = file.GetTimeBase()
-        wave_Y_range = file.GetChannelYRange(select_channel)
-        wave_Y_low = wave_Y_range[0]
-        wave_Y_high = wave_Y_range[1]
-        wave_units = file.GetChannelUnits(select_channel)
-        wave_title = file.GetChannelTitle(select_channel)
-        wave_channel_type = file.ChannelType(select_channel)
-        wave_sample_ticks = file.ChannelDivide(select_channel)
-        wave_Fs = 1 / period
-        time_start = 0
+    #     wave_offset = file.GetChannelOffset(select_channel)
+    #     wave_scale = file.GetChannelScale(select_channel)
+    #     wave_time_base = file.GetTimeBase()
+    #     wave_Y_range = file.GetChannelYRange(select_channel)
+    #     wave_Y_low = wave_Y_range[0]
+    #     wave_Y_high = wave_Y_range[1]
+    #     wave_units = file.GetChannelUnits(select_channel)
+    #     wave_title = file.GetChannelTitle(select_channel)
+    #     wave_channel_type = file.ChannelType(select_channel)
+    #     wave_sample_ticks = file.ChannelDivide(select_channel)
+    #     wave_Fs = 1 / period
+    #     time_start = 0
 
-        new.SetTimeBase(wave_time_base)
-        new_wave_channel = 0
+    #     new.SetTimeBase(wave_time_base)
+    #     new_wave_channel = 0
 
-        new.SetWaveChannel(new_wave_channel, wave_sample_ticks, sp.DataType.Adc, wave_Fs)
-        new.SetChannelTitle(new_wave_channel, wave_title)
-        new.SetChannelUnits(new_wave_channel, wave_units)
-        new.SetChannelScale(new_wave_channel, wave_scale)
-        new.SetChannelOffset(new_wave_channel, wave_offset)
-        new.SetChannelYRange(new_wave_channel, wave_Y_low, wave_Y_high)
+    #     new.SetWaveChannel(new_wave_channel, wave_sample_ticks, sp.DataType.Adc, wave_Fs)
+    #     new.SetChannelTitle(new_wave_channel, wave_title)
+    #     new.SetChannelUnits(new_wave_channel, wave_units)
+    #     new.SetChannelScale(new_wave_channel, wave_scale)
+    #     new.SetChannelOffset(new_wave_channel, wave_offset)
+    #     new.SetChannelYRange(new_wave_channel, wave_Y_low, wave_Y_high)
 
-        spike_channel = new.GetFreeChannel()
-        max_event_rate = 1 / (wave_time_base * wave_sample_ticks)
+    #     spike_channel = new.GetFreeChannel()
+    #     max_event_rate = 1 / (wave_time_base * wave_sample_ticks)
 
-        new.SetEventChannel(spike_channel, max_event_rate, sp.DataType.EventFall)
-        new.SetChannelTitle(spike_channel, 'ST-1')
-        new.SetChannelUnits(spike_channel, wave_units)
-        new.SetChannelScale(spike_channel, wave_scale)
-        new.SetChannelOffset(spike_channel, wave_offset)
-        new.SetChannelYRange(spike_channel, wave_Y_low, wave_Y_high)
-        del new
+    #     new.SetEventChannel(spike_channel, max_event_rate, sp.DataType.EventFall)
+    #     new.SetChannelTitle(spike_channel, 'ST-1')
+    #     new.SetChannelUnits(spike_channel, wave_units)
+    #     new.SetChannelScale(spike_channel, wave_scale)
+    #     new.SetChannelOffset(spike_channel, wave_offset)
+    #     new.SetChannelYRange(spike_channel, wave_Y_low, wave_Y_high)
+    #     del new
 
-        reload = sp.SonFile(filename, False)
-        if inverted == True:
-            wave = [-i for i in wave]
-        write_wave = reload.WriteInts(new_wave_channel, wave, time_start)
+    #     reload = sp.SonFile(filename, False)
+    #     if inverted == True:
+    #         wave = [-i for i in wave]
+    #     write_wave = reload.WriteInts(new_wave_channel, wave, time_start)
 
-        if write_wave < 0:
-            print(f'Error code: {write_wave}')
-            print(sp.GetErrorString(write_wave))
-        else:
-            print('Waveform written successfully.')
+    #     if write_wave < 0:
+    #         print(f'Error code: {write_wave}')
+    #         print(sp.GetErrorString(write_wave))
+    #     else:
+    #         print('Waveform written successfully.')
 
-        spike_ticks = [int(i / wave_time_base) for i in spiketrain]
-        spike_times_formatted = np.array(spike_ticks, dtype=np.int64)
-        write_train = reload.WriteEvents(spike_channel, spike_times_formatted)
+    #     spike_ticks = [int(i / wave_time_base) for i in spiketrain]
+    #     spike_times_formatted = np.array(spike_ticks, dtype=np.int64)
+    #     write_train = reload.WriteEvents(spike_channel, spike_times_formatted)
 
-        if write_train < 0:
-            print(f'Error Code: {write_train}')
-            print(sp.GetErrorString(write_train))
-            status = -1
-        else:
-            print('Spike train written successfully.')
-            status = 0
+    #     if write_train < 0:
+    #         print(f'Error Code: {write_train}')
+    #         print(sp.GetErrorString(write_train))
+    #         status = -1
+    #     else:
+    #         print('Spike train written successfully.')
+    #         status = 0
 
-        del reload
+    #     del reload
 
-        btn = st.download_button(
-            label="Download numpy array (.smr)",
-            data = reload, # Download buffer
-            file_name = 'predicted_map.smr'
-        ) 
+    #     btn = st.download_button(
+    #         label="Download numpy array (.smr)",
+    #         data = reload, # Download buffer
+    #         file_name = 'predicted_map.smr'
+    #     ) 
 
 
 
