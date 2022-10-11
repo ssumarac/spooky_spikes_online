@@ -15,7 +15,7 @@ from math import floor
 from scipy.signal import welch, find_peaks
 from scipy import signal
 from sonpy import lib as sonp
-from astropy.timeseries import LombScargle
+#from astropy.timeseries import LombScargle
 import math
 from scipy.signal import welch, find_peaks,peak_widths
 from sklearn.mixture import GaussianMixture
