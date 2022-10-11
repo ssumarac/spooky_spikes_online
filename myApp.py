@@ -681,6 +681,9 @@ def main():
     # st.sidebar.write(name10, val10)
     # st.sidebar.write(name11, val11)
 
+    text_contents = '''This is some text'''
+    st.sidebar.download_button('Download some text', text_contents)
+
 st.title('TNBS Spooky Spikes Online')
 
 st.info('By Srdjan Sumarac & Luka Zivkovic')
