@@ -664,12 +664,13 @@ def check_password():
         # Password correct.
         return True
 
-if check_password():
-    
-    f = st.file_uploader('Select smr file to upload','smr',False)
-    #st.write(os.getcwd())
 
-    if f is not None:
+    
+f = st.file_uploader('Select smr file to upload','smr',False)
+#st.write(os.getcwd())
+
+if f is not None:
+    if check_password():
         filename = upload_smr_file(f)
         main()
 
