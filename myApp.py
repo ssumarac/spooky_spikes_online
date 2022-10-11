@@ -483,7 +483,7 @@ def main():
 
         st.header('Oscillations')
 
-        oscillations_required = st.checkbox('Spike Sorting')
+        oscillations_required = st.checkbox('Spiketrain Oscillation Analysis')
 
         if oscillations_required == True:
         
