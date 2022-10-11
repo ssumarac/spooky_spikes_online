@@ -1,4 +1,3 @@
-from re import S
 import streamlit as st
 import neo.io
 import numpy as np
