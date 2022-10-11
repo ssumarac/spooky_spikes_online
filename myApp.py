@@ -349,7 +349,7 @@ def main():
         peak_indices, spikes = get_spikes(filtered_data, peak_indices, int(1*10**-3*fs))
         peak_values = np.array([filtered_data[j] for j in peak_indices])
         
-        sorting_required = st.checkbox('Is spike sorting required?')
+        sorting_required = st.checkbox('Spike Sorting')
 
         if sorting_required == True:
             fig_update.empty()
@@ -482,48 +482,52 @@ def main():
         percent_isi_violations = (sum(isi < 1/1000)/len(isi))*100
 
         st.header('Oscillations')
+
+        oscillations_required = st.checkbox('Spike Sorting')
+
+        if oscillations_required == True:
         
-        lag_time = 0.5
-        time_interval = 0.01
-        psd_power_df, freqs_autocorr, psd_autocorr, binned_time, autocorr = spike_oscillations(raw_data = raw_data, spiketrain = peak_indices,fs = fs,lag_time = 0.5,time_interval = 0.01, to_plot = True)
+            lag_time = 0.5
+            time_interval = 0.01
+            psd_power_df, freqs_autocorr, psd_autocorr, binned_time, autocorr = spike_oscillations(raw_data = raw_data, spiketrain = peak_indices,fs = fs,lag_time = 0.5,time_interval = 0.01, to_plot = True)
 
-        fig4_pre= go.Figure(data=go.Scatter(
-                x = binned_time, 
-                y = autocorr,
-                name='Autocorrelation',
-                line = dict(color='black'),
-                showlegend=False))
+            fig4_pre= go.Figure(data=go.Scatter(
+                    x = binned_time, 
+                    y = autocorr,
+                    name='Autocorrelation',
+                    line = dict(color='black'),
+                    showlegend=False))
 
-        fig4_pre.update_layout(xaxis_range=[-0.5,0.5])
+            fig4_pre.update_layout(xaxis_range=[-0.5,0.5])
 
-        fig4_pre.update_layout(
-            title="Spiketrain Autocorrelation Function",
-            title_x=0.5,
-            xaxis_title="Lag (s)",
-            yaxis_title="Autocorrelation")
+            fig4_pre.update_layout(
+                title="Spiketrain Autocorrelation Function",
+                title_x=0.5,
+                xaxis_title="Lag (s)",
+                yaxis_title="Autocorrelation")
 
-        st.plotly_chart(fig4_pre)
-        
-        fig4 = go.Figure(data=go.Scatter(
-                x = freqs_autocorr, 
-                y = psd_autocorr,
-                name='LombScargle',
-                line = dict(color='black'),
-                showlegend=False))
+            st.plotly_chart(fig4_pre)
+            
+            fig4 = go.Figure(data=go.Scatter(
+                    x = freqs_autocorr, 
+                    y = psd_autocorr,
+                    name='LombScargle',
+                    line = dict(color='black'),
+                    showlegend=False))
 
-        fig4.update_layout(xaxis_range=[0,50])
+            fig4.update_layout(xaxis_range=[0,50])
 
-        fig4.update_layout(
-            title="Lomb-Scargle Periodogram",
-            title_x=0.5,
-            xaxis_title="Frequency (Hz)",
-            yaxis_title="Power Spectral Density (V^2 / Hz)")
-        
-        st.plotly_chart(fig4)
+            fig4.update_layout(
+                title="Lomb-Scargle Periodogram",
+                title_x=0.5,
+                xaxis_title="Frequency (Hz)",
+                yaxis_title="Power Spectral Density (V^2 / Hz)")
+            
+            st.plotly_chart(fig4)
 
-        st.subheader('Spiketrain Oscillation Features')
+            st.subheader('Spiketrain Oscillation Features')
 
-        st.table(psd_power_df)
+            st.table(psd_power_df)
 
 
     with tab2:
