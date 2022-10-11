@@ -764,7 +764,7 @@ def main():
 
         btn = st.download_button(
             label="Download numpy array (.smr)",
-            data = new, # Download buffer
+            data = reload, # Download buffer
             file_name = 'predicted_map.smr'
         ) 
 
