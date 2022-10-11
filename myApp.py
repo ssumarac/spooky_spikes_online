@@ -350,7 +350,7 @@ def main():
         peak_indices, spikes = get_spikes(filtered_data, peak_indices, int(1*10**-3*fs))
         peak_values = np.array([filtered_data[j] for j in peak_indices])
         
-        sorting_required = st.side.checkbox('Spike Sorting')
+        sorting_required = st.sidebar.checkbox('Spike Sorting')
 
         if sorting_required == True:
             fig_update.empty()
