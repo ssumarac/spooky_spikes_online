@@ -476,6 +476,8 @@ def main():
         burst_index = np.max(means) / np.min(means)
         cv = median_abs_deviation(isi) / np.median(isi)
 
+        st.subheader('Spiketrain Characteristics')
+
         col1, col2, col3 = st.columns(3)
 
         with col1:
