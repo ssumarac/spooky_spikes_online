@@ -298,6 +298,7 @@ def main():
     
     channel_id = select_channel + 1
 
+    st.sidebar.title("Options")
     
     tab1, tab2, = st.tabs(["Spiketrain Analysis", "Spike Shapes"])
     
@@ -312,7 +313,7 @@ def main():
         filtered_data = bandpass_filter(raw_data, highpass_fs, lowpass_fs, fs)
         
         threshold_slider = float(st.text_input('Enter threshold crossing factor k (k*MAD estimate of noise)',value=2))
-        inverted = st.checkbox('Invert Peaks')
+        inverted = st.sidebar.checkbox('Invert Peaks')
         
         peak_indices, threshold = peak_detection(filtered_data,inverted,threshold_slider)
         peak_values = np.array([filtered_data[j] for j in peak_indices])
@@ -349,7 +350,7 @@ def main():
         peak_indices, spikes = get_spikes(filtered_data, peak_indices, int(1*10**-3*fs))
         peak_values = np.array([filtered_data[j] for j in peak_indices])
         
-        sorting_required = st.checkbox('Spike Sorting')
+        sorting_required = st.side.checkbox('Spike Sorting')
 
         if sorting_required == True:
             fig_update.empty()
@@ -494,7 +495,7 @@ def main():
 
         st.header('Oscillations')
 
-        oscillations_required = st.checkbox('Spiketrain Oscillation Analysis')
+        oscillations_required = st.sidebar.checkbox('Spiketrain Oscillation Analysis')
 
         if oscillations_required == True:
         
