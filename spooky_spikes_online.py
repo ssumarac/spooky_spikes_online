@@ -23,6 +23,7 @@ import math
 from scipy.signal import welch, find_peaks,peak_widths
 from sklearn.mixture import GaussianMixture
 from scipy.stats import median_abs_deviation
+import pickle
 
 def check_password():
     """Returns `True` if the user had the correct password."""
