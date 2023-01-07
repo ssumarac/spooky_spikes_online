@@ -228,32 +228,37 @@ def spike_oscillations(raw_data, spiketrain,fs,lag_time,time_interval, to_plot):
     delta_peaks, _ = find_peaks(psd_autocorr[find_nearest(freqs_autocorr,0):find_nearest(freqs_autocorr,4)])
     theta_peaks, _ = find_peaks(psd_autocorr[find_nearest(freqs_autocorr,4):find_nearest(freqs_autocorr,8)])
     alpha_peaks, _ = find_peaks(psd_autocorr[find_nearest(freqs_autocorr,8):find_nearest(freqs_autocorr,12)])
-    beta_peaks, _ = find_peaks(psd_autocorr[find_nearest(freqs_autocorr,12):find_nearest(freqs_autocorr,35)])
-    gamma_peaks, _ = find_peaks(psd_autocorr[find_nearest(freqs_autocorr,35):find_nearest(freqs_autocorr,50)])
+    low_beta_peaks, _ = find_peaks(psd_autocorr[find_nearest(freqs_autocorr,12):find_nearest(freqs_autocorr,21)])
+    high_beta_peaks, _ = find_peaks(psd_autocorr[find_nearest(freqs_autocorr,21):find_nearest(freqs_autocorr,30)])
+    gamma_peaks, _ = find_peaks(psd_autocorr[find_nearest(freqs_autocorr,30):find_nearest(freqs_autocorr,50)])
     
-    if (len(delta_peaks) == 0) or (len(theta_peaks) == 0) or (len(alpha_peaks) == 0) or (len(beta_peaks) == 0) or (len(gamma_peaks) == 0):
-        delta_freq = -100
-        theta_freq = -100
-        alpha_freq = -100
-        beta_freq = -100
-        gamma_freq = -100
+    if (len(delta_peaks) == 0) or (len(theta_peaks) == 0) or (len(alpha_peaks) == 0) or (len(low_beta_peaks) == 0) or (len(high_beta_peaks) == 0) or (len(gamma_peaks) == 0):
+        delta_freq = 0.000001
+        theta_freq = 0.000001
+        alpha_freq = 0.000001
+        low_beta_freq = 0.000001
+        high_beta_freq = 0.000001
+        gamma_freq = 0.000001
         
-        delta_power = -100
-        theta_power = -100
-        alpha_power = -100
-        beta_power = -100
-        gamma_power = -100
+        delta_power = 0.000001
+        theta_power = 0.000001
+        alpha_power = 0.000001
+        low_beta_power = 0.000001
+        high_beta_power = 0.000001
+        gamma_power = 0.000001
     
     else:
         theta_peaks = theta_peaks + find_nearest(freqs_autocorr,4)
         alpha_peaks  = alpha_peaks + find_nearest(freqs_autocorr,8)
-        beta_peaks = beta_peaks + find_nearest(freqs_autocorr,12)
-        gamma_peaks = gamma_peaks + find_nearest(freqs_autocorr,35)
+        low_beta_peaks = low_beta_peaks + find_nearest(freqs_autocorr,12)
+        high_beta_peaks = high_beta_peaks + find_nearest(freqs_autocorr,21)
+        gamma_peaks = gamma_peaks + find_nearest(freqs_autocorr,30)
         
         delta_peak_width = peak_widths(psd_autocorr, delta_peaks,rel_height=1)[0][psd_autocorr[delta_peaks].argmax()]
         theta_peak_width = peak_widths(psd_autocorr, theta_peaks,rel_height=1)[0][psd_autocorr[theta_peaks].argmax()]
         alpha_peak_width = peak_widths(psd_autocorr, alpha_peaks,rel_height=1)[0][psd_autocorr[alpha_peaks].argmax()]
-        beta_peak_width = peak_widths(psd_autocorr, beta_peaks,rel_height=1)[0][psd_autocorr[beta_peaks].argmax()]
+        low_beta_peak_width = peak_widths(psd_autocorr, low_beta_peaks,rel_height=1)[0][psd_autocorr[low_beta_peaks].argmax()]
+        high_beta_peak_width = peak_widths(psd_autocorr, high_beta_peaks,rel_height=1)[0][psd_autocorr[high_beta_peaks].argmax()]
         gamma_peak_width = peak_widths(psd_autocorr, gamma_peaks,rel_height=1)[0][psd_autocorr[gamma_peaks].argmax()]
         
         delta_peak = psd_autocorr[delta_peaks[psd_autocorr[delta_peaks].argmax()]]
@@ -268,16 +273,20 @@ def spike_oscillations(raw_data, spiketrain,fs,lag_time,time_interval, to_plot):
         alpha_freq = freqs_autocorr[alpha_peaks[psd_autocorr[alpha_peaks].argmax()]]
         alpha_power = sum(psd_autocorr[find_nearest(freqs_autocorr,alpha_freq-alpha_peak_width*0.1/2):find_nearest(freqs_autocorr,alpha_freq+alpha_peak_width*0.1/2)])
         
-        beta_peak = psd_autocorr[beta_peaks[psd_autocorr[beta_peaks].argmax()]]
-        beta_freq = freqs_autocorr[beta_peaks[psd_autocorr[beta_peaks].argmax()]]
-        beta_power = sum(psd_autocorr[find_nearest(freqs_autocorr,beta_freq-beta_peak_width*0.1/2):find_nearest(freqs_autocorr,beta_freq+beta_peak_width*0.1/2)])
+        low_beta_peak = psd_autocorr[low_beta_peaks[psd_autocorr[low_beta_peaks].argmax()]]
+        low_beta_freq = freqs_autocorr[low_beta_peaks[psd_autocorr[low_beta_peaks].argmax()]]
+        low_beta_power = sum(psd_autocorr[find_nearest(freqs_autocorr,low_beta_freq-low_beta_peak_width*0.1/2):find_nearest(freqs_autocorr,low_beta_freq+low_beta_peak_width*0.1/2)])
+        
+        high_beta_peak = psd_autocorr[high_beta_peaks[psd_autocorr[high_beta_peaks].argmax()]]
+        high_beta_freq = freqs_autocorr[high_beta_peaks[psd_autocorr[high_beta_peaks].argmax()]]
+        high_beta_power = sum(psd_autocorr[find_nearest(freqs_autocorr,high_beta_freq-high_beta_peak_width*0.1/2):find_nearest(freqs_autocorr,high_beta_freq+high_beta_peak_width*0.1/2)])
         
         gamma_peak = psd_autocorr[gamma_peaks[psd_autocorr[gamma_peaks].argmax()]]
         gamma_freq = freqs_autocorr[gamma_peaks[psd_autocorr[gamma_peaks].argmax()]]
         gamma_power = sum(psd_autocorr[find_nearest(freqs_autocorr,gamma_freq-gamma_peak_width*0.1/2):find_nearest(freqs_autocorr,gamma_freq+gamma_peak_width*0.1/2)])
     
     
-    psd_power = {'Band':['Delta [0-4Hz]', 'Theta [4-8Hz]', 'Alpha [8-12Hz]', 'Beta [12-35Hz]', 'Gamma [35-50Hz]'],'Frequency [Hz]':[delta_freq, theta_freq, alpha_freq, beta_freq, gamma_freq],'Power [dB]':[10*math.log10(delta_power), 10*math.log10(theta_power), 10*math.log10(alpha_power), 10*math.log10(beta_power), 10*math.log10(gamma_power)]}
+    psd_power = {'Band':['Delta [0-4Hz]', 'Theta [4-8Hz]', 'Alpha [8-12Hz]', 'Low Beta [12-21Hz]', 'High Beta [21-30Hz]', 'Gamma [30-50Hz]'],'Frequency [Hz]':[delta_freq, theta_freq, alpha_freq, low_beta_freq, high_beta_freq, gamma_freq],'Power [dB]':[10*math.log10(delta_power), 10*math.log10(theta_power), 10*math.log10(alpha_power), 10*math.log10(low_beta_power), 10*math.log10(high_beta_power), 10*math.log10(gamma_power)]}
     
     psd_power_df = pd.DataFrame(psd_power)
     
@@ -547,7 +556,8 @@ def main():
             st.subheader('Spiketrain Oscillation Features')
 
             st.table(psd_power_df)
-            st.write(psd_power_df['Power [dB]'])
+            
+            temp_powers = np.array(psd_power_df['Power [dB]'])
            
             dbs_target = st.sidebar.selectbox('Select DBS Target', ['','STN', 'GPi'])
             
@@ -555,7 +565,7 @@ def main():
                 with open("xgboost_STN_model.pkl", "rb") as ML_file:
                     model = pickle.load(ML_file)
                 
-                X_test = np.array([firing_rate, burst_index, cv, ]).reshape(1, -1)
+                X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
                 y_pred = model.predict(X_test)[0]
                 if y_pred == 0:
                     st.sidebar.write("Predicted Neuron: SNr")
