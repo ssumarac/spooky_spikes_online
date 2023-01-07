@@ -306,6 +306,16 @@ def spike_oscillations(raw_data, spiketrain,fs,lag_time,time_interval, to_plot):
     
     return psd_power_df, freqs_autocorr, psd_autocorr, binned_time, autocorr
 
+@st.cache
+def load_STN_model():
+    with open("xgboost_STN_model.pkl", "rb") as ML_file:
+        return pickle.load(ML_file)
+  
+@st.cache
+def load_GPi_model():
+    with open("xgboost_GPi_model.pkl", "rb") as ML_file:
+        return pickle.load(ML_file)
+
 def main():
     FilePath = os.getcwd() + "/" + f.name
 
@@ -571,8 +581,7 @@ def main():
         dbs_target = st.sidebar.selectbox('Select DBS Target', ['','STN', 'GPi'])
         
         if dbs_target == "STN":
-            with open("xgboost_STN_model.pkl", "rb") as ML_file:
-                model = pickle.load(ML_file)
+            model = load_STN_model()
             
             X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
             y_pred = model.predict(X_test)[0]
@@ -583,8 +592,7 @@ def main():
                 st.sidebar.write("Predicted Neuron: Subthalamic Nucleus (STN)")
                 
         if dbs_target == "GPi":
-            with open("xgboost_GPi_model.pkl", "rb") as ML_file:
-                model = pickle.load(ML_file)
+            model = load_GPi_model()
             
             X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
             y_pred = model.predict(X_test)[0]
