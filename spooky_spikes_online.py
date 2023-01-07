@@ -499,7 +499,10 @@ def main():
         st.header('Oscillations')
 
         oscillations_required = st.sidebar.checkbox('Spiketrain Oscillation Analysis')
-
+        
+        st.sidebar.title("Machine Learning")
+        st.sidebar.write("NOTE: ""Spiketrain Oscillation Analysis"" must be checked to enable ML predictions.")
+        
         if oscillations_required == True:
         
             lag_time = 0.5
@@ -544,8 +547,7 @@ def main():
 
             st.table(psd_power_df)
             
-            st.sidebar.title("Machine Learning")
-            st.sidebar.write("NOTE: ""Spiketrain Oscillation Analysis"" must be checked to enable ML predictions.")
+           
             dbs_target = st.sidebar.selectbox('Select DBS Target', ['STN', 'GPi'])
             
             if dbs_target == "STN":
