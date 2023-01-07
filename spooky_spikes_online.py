@@ -772,7 +772,7 @@ def main():
 
 
 
-st.title('TNBS Spooky Spikes Online - TESTING')
+st.title('TNBS: Spooky Spikes Online')
 
 st.info('By Srdjan Sumarac & Luka Zivkovic')
 st.image(Image.open('tnbs_logo.png'),width=150)
