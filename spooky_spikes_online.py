@@ -545,7 +545,7 @@ def main():
             st.table(psd_power_df)
             
             st.sidebar.title("Machine Learning")
-            st.sidebar.suptitle("NOTE: ""Spiketrain Oscillation Analysis"" must be checked to enable ML predictions.")
+            st.sidebar.header("NOTE: ""Spiketrain Oscillation Analysis"" must be checked to enable ML predictions.")
             dbs_target = st.selectbox('Select DBS Target', ['STN', 'GPi'])
             
 
