@@ -213,12 +213,18 @@ def spike_oscillations(raw_data, spiketrain,fs,lag_time,time_interval, to_plot):
     autocorr = autocorr/np.mean(autocorr)
     autocorr = autocorr - np.mean(autocorr)
     
-    median = np.median(autocorr)
-    q1, q3 = np.percentile(autocorr, [25, 75])
-    iqr = q3 - q1
-    lower_bound = q1 - (1.5 * iqr)
-    upper_bound = q3 + (1.5 * iqr)
-    autocorr[(autocorr < lower_bound) | (autocorr > upper_bound)] = median
+    # median = np.median(autocorr)
+
+    # # Calculate the interquartile range of the data
+    # q1, q3 = np.percentile(autocorr, [25, 75])
+    # iqr = q3 - q1
+    
+    # # Identify the outlier values
+    # lower_bound = q1 - (1.5 * iqr)
+    # upper_bound = q3 + (1.5 * iqr)
+    
+    # # Replace the outlier values with the median
+    # autocorr[(autocorr < lower_bound) | (autocorr > upper_bound)] = median
     
 
     binned_time = np.linspace(-lag_time,lag_time,len(autocorr))
@@ -528,7 +534,9 @@ def main():
         
         st.sidebar.title("Machine Learning")
         
-        psd_power_df, freqs_autocorr, psd_autocorr, binned_time, autocorr = spike_oscillations(raw_data = raw_data, spiketrain = peak_indices,fs = fs,lag_time = 0.5,time_interval = 0.005, to_plot = True)
+        lag_time = 0.5
+        time_interval = 0.01
+        psd_power_df, freqs_autocorr, psd_autocorr, binned_time, autocorr = spike_oscillations(raw_data = raw_data, spiketrain = peak_indices,fs = fs,lag_time = 0.5,time_interval = 0.01, to_plot = True)
         
         fig4_pre= go.Figure(data=go.Scatter(
                 x = binned_time, 
