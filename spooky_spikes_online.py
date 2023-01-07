@@ -213,8 +213,6 @@ def spike_oscillations(raw_data, spiketrain,fs,lag_time,time_interval, to_plot):
     autocorr = autocorr/np.mean(autocorr)
     autocorr = autocorr - np.mean(autocorr)
     
-    
-    
     # median = np.median(autocorr)
 
     # # Calculate the interquartile range of the data
@@ -579,9 +577,20 @@ def main():
             X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
             y_pred = model.predict(X_test)[0]
             if y_pred == 0:
-                st.sidebar.write("Predicted Neuron: SNr")
+                st.sidebar.write("Predicted Neuron: Substantia Nigra Pars Reticulata (SNr)")
             elif y_pred == 1:
-                st.sidebar.write("Predicted Neuron: STN")
+                st.sidebar.write("Predicted Neuron: Subthalamic Nucleus (STN)")
+                
+        if dbs_target == "GPi":
+            with open("xgboost_GPi_model.pkl", "rb") as ML_file:
+                model = pickle.load(ML_file)
+            
+            X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
+            y_pred = model.predict(X_test)[0]
+            if y_pred == 0:
+                st.sidebar.write("Predicted Neuron: High-Frequency Discharge (HFD)")
+            elif y_pred == 1:
+                st.sidebar.write("Predicted Neuron: Border Cell (BOR)")
 
 
     with tab2:
