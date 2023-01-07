@@ -555,12 +555,12 @@ def main():
                 with open("xgboost_STN_model.pkl", "rb") as ML_file:
                     model = pickle.load(ML_file)
                 
-                X_test = np.array([23.5543, 	14.1167, 	0.480198,	12.5127,	-7.29173,	-10.0345,	-12.7737,	-17.541	,-5.10739]).reshape(1, -1)
+                X_test = np.array([60.5543, 	20.1167, 	0.480198,	12.5127,	-7.29173,	-10.0345,	-12.7737,	-17.541	,-5.10739]).reshape(1, -1)
                 y_pred = model.predict(X_test)[0]
                 if y_pred == 0:
-                    st.sidebar.write("SNr")
+                    st.sidebar.write("Predicted Neuron: SNr")
                 elif y_pred == 1:
-                    st.sidebar.metric("STN")
+                    st.sidebar.write("Predicted Neuron: STN")
 
 
     with tab2:
