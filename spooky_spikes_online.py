@@ -306,12 +306,12 @@ def spike_oscillations(raw_data, spiketrain,fs,lag_time,time_interval, to_plot):
     
     return psd_power_df, freqs_autocorr, psd_autocorr, binned_time, autocorr
 
-@st.cache
+@st.experimental_singleton
 def load_STN_model():
     with open("xgboost_STN_model.pkl", "rb") as ML_file:
         return pickle.load(ML_file)
   
-@st.cache
+@st.experimental_singleton
 def load_GPi_model():
     with open("xgboost_GPi_model.pkl", "rb") as ML_file:
         return pickle.load(ML_file)
