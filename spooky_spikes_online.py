@@ -213,6 +213,22 @@ def spike_oscillations(raw_data, spiketrain,fs,lag_time,time_interval, to_plot):
     autocorr = autocorr/np.mean(autocorr)
     autocorr = autocorr - np.mean(autocorr)
     
+    
+    
+    median = np.median(autocorr)
+
+    # Calculate the interquartile range of the data
+    q1, q3 = np.percentile(autocorr, [25, 75])
+    iqr = q3 - q1
+    
+    # Identify the outlier values
+    lower_bound = q1 - (1.5 * iqr)
+    upper_bound = q3 + (1.5 * iqr)
+    
+    # Replace the outlier values with the median
+    autocorr[(autocorr < lower_bound) | (autocorr > upper_bound)] = median
+    
+
     binned_time = np.linspace(-lag_time,lag_time,len(autocorr))
     
     #freqs_autocorr, psd_autocorr = welch(autocorr, fs = 1/0.01)
