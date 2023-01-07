@@ -545,7 +545,7 @@ def main():
             st.table(psd_power_df)
             
             st.sidebar.title("Machine Learning")
-            st.sidebar.write("NOTE: ""Spiketrain Oscillation Analysis"" must be checked to enable ML predictions")
+            st.sidebar.subtitle("NOTE: ""Spiketrain Oscillation Analysis"" must be checked to enable ML predictions.")
             
 
 
