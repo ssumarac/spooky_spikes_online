@@ -576,7 +576,7 @@ def main():
             
             X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
             y_pred = model.predict(X_test)[0]
-            st.sidebar.subheader("Predicted Neuron:")
+            st.sidebar.write("Predicted Neuron:")
             if y_pred == 0:
                 st.sidebar.write("Predicted Neuron: Substantia Nigra Pars Reticulata (SNr)")
             elif y_pred == 1:
@@ -588,7 +588,7 @@ def main():
             
             X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
             y_pred = model.predict(X_test)[0]
-            st.sidebar.subheader("Predicted Neuron:")
+            st.sidebar.write("Predicted Neuron:")
             if y_pred == 0:
                 st.sidebar.write("Border Cell (BOR)")
             elif y_pred == 1:
