@@ -509,7 +509,7 @@ def main():
             lag_time = 0.5
             time_interval = 0.01
             psd_power_df, freqs_autocorr, psd_autocorr, binned_time, autocorr = spike_oscillations(raw_data = raw_data, spiketrain = peak_indices,fs = fs,lag_time = 0.5,time_interval = 0.01, to_plot = True)
-
+            
             fig4_pre= go.Figure(data=go.Scatter(
                     x = binned_time, 
                     y = autocorr,
@@ -547,7 +547,7 @@ def main():
             st.subheader('Spiketrain Oscillation Features')
 
             st.table(psd_power_df)
-            
+            st.write(psd_power_df['Power [dB]'])
            
             dbs_target = st.sidebar.selectbox('Select DBS Target', ['','STN', 'GPi'])
             
@@ -555,7 +555,7 @@ def main():
                 with open("xgboost_STN_model.pkl", "rb") as ML_file:
                     model = pickle.load(ML_file)
                 
-                X_test = np.array([60.5543, 	20.1167, 	0.480198,	12.5127,	-7.29173,	-10.0345,	-12.7737,	-17.541	,-5.10739]).reshape(1, -1)
+                X_test = np.array([firing_rate, burst_index, cv, ]).reshape(1, -1)
                 y_pred = model.predict(X_test)[0]
                 if y_pred == 0:
                     st.sidebar.write("Predicted Neuron: SNr")
