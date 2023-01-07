@@ -543,6 +543,10 @@ def main():
             st.subheader('Spiketrain Oscillation Features')
 
             st.table(psd_power_df)
+            
+            st.sidebar.title("Machine Learning")
+            st.sidebar.write("NOTE: ""Spiketrain Oscillation Analysis"" must be checked to enable ML predictions")
+            
 
 
     with tab2:
