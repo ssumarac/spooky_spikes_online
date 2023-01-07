@@ -549,16 +549,18 @@ def main():
             st.table(psd_power_df)
             
            
-            dbs_target = st.sidebar.selectbox('Select DBS Target', ['STN', 'GPi'])
+            dbs_target = st.sidebar.selectbox('Select DBS Target', ['','STN', 'GPi'])
             
             if dbs_target == "STN":
                 with open("xgboost_STN_model.pkl", "rb") as ML_file:
                     model = pickle.load(ML_file)
                 
                 X_test = np.array([110.5543, 	14.1167, 	0.480198,	12.5127,	-7.29173,	-10.0345,	-12.7737,	-17.541	,-5.10739]).reshape(1, -1)
-                y_pred = model.predict(X_test)
-                st.write(y_pred)
-            
+                y_pred = model.predict(X_test)[0]
+                if y_pred == 0:
+                    st.sidebar.write("SNr")
+                elif y_pred == 1:
+                    st.sidebar.write("STN")
 
 
     with tab2:
