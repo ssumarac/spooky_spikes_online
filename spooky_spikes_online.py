@@ -529,7 +529,7 @@ def main():
         st.sidebar.title("Machine Learning")
         
         lag_time = 0.5
-        time_interval = 0.005
+        time_interval = 0.001
         psd_power_df, freqs_autocorr, psd_autocorr, binned_time, autocorr = spike_oscillations(raw_data = raw_data, spiketrain = peak_indices,fs = fs,lag_time = 0.5,time_interval = 0.01, to_plot = True)
         
         fig4_pre= go.Figure(data=go.Scatter(
