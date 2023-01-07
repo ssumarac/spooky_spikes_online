@@ -546,6 +546,7 @@ def main():
             
             st.sidebar.title("Machine Learning")
             st.sidebar.subtitle("NOTE: ""Spiketrain Oscillation Analysis"" must be checked to enable ML predictions.")
+            dbs_target = st.selectbox('Select DBS Target', ['STN', 'GPi'])
             
 
 
