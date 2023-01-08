@@ -587,9 +587,9 @@ def main():
             y_pred = model.predict(X_test)[0]
             st.sidebar.subheader("Predicted Neuron:")
             if y_pred == 0:
-                st.sidebar.write("Predicted Neuron: Substantia Nigra Pars Reticulata (SNr)")
+                st.sidebar.write("Substantia Nigra Pars Reticulata (SNr)")
             elif y_pred == 1:
-                st.sidebar.write("Predicted Neuron: Subthalamic Nucleus (STN)")
+                st.sidebar.write("Subthalamic Nucleus (STN)")
                 
         if dbs_target == "GPi":
             model = load_GPi_model()
