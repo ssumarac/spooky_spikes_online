@@ -532,7 +532,7 @@ def main():
 
         #st.header('Oscillations')
         
-        st.sidebar.title("Machine Learning")
+        #st.sidebar.title("Machine Learning")
         
         #lag_time = 0.5
         #time_interval = 0.01
@@ -578,29 +578,29 @@ def main():
         
         #temp_powers = np.array(psd_power_df['Power [dB]'])
        
-        dbs_target = st.sidebar.selectbox('Select DBS Target', ['','STN', 'GPi'])
+        #dbs_target = st.sidebar.selectbox('Select DBS Target', ['','STN', 'GPi'])
         
-        if dbs_target == "STN":
-            model = load_STN_model()
+        #if dbs_target == "STN":
+        #    model = load_STN_model()
             
-            X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
-            y_pred = model.predict(X_test)[0]
-            st.sidebar.subheader("Predicted Neuron:")
-            if y_pred == 0:
-                st.sidebar.write("Substantia Nigra Pars Reticulata (SNr)")
-            elif y_pred == 1:
-                st.sidebar.write("Subthalamic Nucleus (STN)")
+        #    X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
+        #    y_pred = model.predict(X_test)[0]
+        #    st.sidebar.subheader("Predicted Neuron:")
+        #    if y_pred == 0:
+        #        st.sidebar.write("Substantia Nigra Pars Reticulata (SNr)")
+        #    elif y_pred == 1:
+        #        st.sidebar.write("Subthalamic Nucleus (STN)")
                 
-        if dbs_target == "GPi":
-            model = load_GPi_model()
+        #if dbs_target == "GPi":
+        #    model = load_GPi_model()
             
-            X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
-            y_pred = model.predict(X_test)[0]
-            st.sidebar.subheader("Predicted Neuron:")
-            if y_pred == 0:
-                st.sidebar.write("Border Cell (BOR)")
-            elif y_pred == 1:
-                st.sidebar.write("High-Frequency Discharge (HFD)")
+        #    X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
+        #    y_pred = model.predict(X_test)[0]
+        #    st.sidebar.subheader("Predicted Neuron:")
+        #    if y_pred == 0:
+        #        st.sidebar.write("Border Cell (BOR)")
+        #    elif y_pred == 1:
+        #        st.sidebar.write("High-Frequency Discharge (HFD)")
 
 
     with tab2:
