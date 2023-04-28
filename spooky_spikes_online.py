@@ -475,6 +475,7 @@ def main():
             clusters = 1
 
         spiketrain = peak_indices/fs
+        st.write(spiketrain)
         isi = el.statistics.isi(spiketrain)
 
         firing_rate = 1/isi.mean()
