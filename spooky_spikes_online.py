@@ -131,7 +131,6 @@ def spike_sorting(spikes,clusters):
     
     return features, labels
 
-
 def euclidean_distance(x, y):
     return np.linalg.norm(x - y)
 
@@ -145,8 +144,8 @@ def calculate_px(x, events, lambda_, d0):
 
 def isolation_score(spike_cluster, noise_cluster, lambda_ = 10):
     all_events = np.concatenate((spike_cluster, noise_cluster))
-    d0 = np.mean([euclidean_distance(x, y) for x in spike_cluster for y in spike_cluster if x is not y])
-    p_values = [calculate_px(x, all_events, lambda_, d0)[np.isin(all_events, spike_cluster)] for x in spike_cluster]
+    d0 = np.mean([euclidean_distance(x, y) for x in spike_cluster for y in spike_cluster if not np.array_equal(x, y)])
+    p_values = [calculate_px(x, all_events, lambda_, d0)[np.isin(all_events, spike_cluster).reshape(-1)] for x in spike_cluster]
     return np.mean(np.sum(p_values, axis=1))
 
 def spike_oscillations(raw_data, spiketrain,fs,lag_time,time_interval, to_plot):
