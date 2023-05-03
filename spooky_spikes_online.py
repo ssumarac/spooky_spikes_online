@@ -478,7 +478,7 @@ def main():
             desired_spikes = np.absolute(np.array(desired_spikes))
 
             desired_clusters = colour_list[desired_spikes.argmax()]
-            noise_clusters = colour_list[desired_spikes.argmin()]
+            #noise_clusters = colour_list[desired_spikes.argmin()]
             
             ##
                 
@@ -491,9 +491,9 @@ def main():
             spikes = spikes[colour_label == desired_clusters]
             
             
-            result = isolation_score(features[colour_label == desired_clusters], features[colour_label == noise_clusters])
+            #result = isolation_score(features[colour_label == desired_clusters], features[colour_label == noise_clusters])
             
-            st.write(result)
+            #st.write(result)
                 
         else:
             desired_clusters = 'red'
