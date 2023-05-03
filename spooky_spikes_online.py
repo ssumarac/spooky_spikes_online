@@ -142,10 +142,13 @@ def calculate_px(x, events, lambda_, d0):
     denominator = numerator.sum()
     return numerator / denominator
 
+def is_in_array(array, target_array):
+    return np.array([np.any(np.all(target_array == elem, axis=1)) for elem in array])
+
 def isolation_score(spike_cluster, noise_cluster, lambda_ = 10):
     all_events = np.concatenate((spike_cluster, noise_cluster))
     d0 = np.mean([euclidean_distance(x, y) for x in spike_cluster for y in spike_cluster if not np.array_equal(x, y)])
-    p_values = [calculate_px(x, all_events, lambda_, d0)[np.isin(all_events, spike_cluster).reshape(-1)] for x in spike_cluster]
+    p_values = [calculate_px(x, all_events, lambda_, d0)[is_in_array(all_events, spike_cluster)] for x in spike_cluster]
     return np.mean(np.sum(p_values, axis=1))
 
 def spike_oscillations(raw_data, spiketrain,fs,lag_time,time_interval, to_plot):
