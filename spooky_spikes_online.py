@@ -131,26 +131,23 @@ def spike_sorting(spikes,clusters):
     
     return features, labels
 
-@st.cache
+
 def euclidean_distance(x, y):
-    return np.sqrt(np.sum((x - y) ** 2, axis=-1))
+    return np.linalg.norm(x - y)
 
-@st.cache
-def isolation_score(spike_cluster, noise_cluster, lambda_value=10):
-    all_events = np.concatenate((spike_cluster, noise_cluster), axis=0)
-    d0 = np.mean(euclidean_distance(spike_cluster, spike_cluster[:, np.newaxis]), axis=(-1, -2))
+def similarity(x, y, lambda_, d0):
+    return np.exp(-euclidean_distance(x, y) * lambda_ / d0)
 
-    def similarity(x, y):
-        return np.exp(-euclidean_distance(x, y) * (lambda_value / d0))
+def calculate_px(x, events, lambda_, d0):
+    numerator = np.array([similarity(x, y, lambda_, d0) for y in events])
+    denominator = numerator.sum()
+    return numerator / denominator
 
-    def p_x(y, x):
-        numerator = np.exp(-euclidean_distance(x, y) * (lambda_value / d0))
-        denominator = np.sum(np.exp(-euclidean_distance(x, all_events[:, np.newaxis]) * (lambda_value / d0)), axis=-1)
-        return numerator / denominator
-
-    p_values = np.sum([p_x(y, x) for x in spike_cluster for y in spike_cluster if not np.all(x == y)], axis=-1)
-    isolation_score_value = np.mean(p_values)
-    return isolation_score_value
+def isolation_score(spike_cluster, noise_cluster, lambda_ = 10):
+    all_events = np.concatenate((spike_cluster, noise_cluster))
+    d0 = np.mean([euclidean_distance(x, y) for x in spike_cluster for y in spike_cluster if x is not y])
+    p_values = [calculate_px(x, all_events, lambda_, d0)[np.isin(all_events, spike_cluster)] for x in spike_cluster]
+    return np.mean(np.sum(p_values, axis=1))
 
 def spike_oscillations(raw_data, spiketrain,fs,lag_time,time_interval, to_plot):
     spiketrain = np.array(spiketrain, dtype='int')
