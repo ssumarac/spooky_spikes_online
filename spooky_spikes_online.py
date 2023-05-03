@@ -131,6 +131,27 @@ def spike_sorting(spikes,clusters):
     
     return features, labels
 
+@st.cache
+def euclidean_distance(x, y):
+    return np.sqrt(np.sum((x - y) ** 2, axis=-1))
+
+@st.cache
+def isolation_score(spike_cluster, noise_cluster, lambda_value=10):
+    all_events = np.concatenate((spike_cluster, noise_cluster), axis=0)
+    d0 = np.mean(euclidean_distance(spike_cluster, spike_cluster[:, np.newaxis]), axis=(-1, -2))
+
+    def similarity(x, y):
+        return np.exp(-euclidean_distance(x, y) * (lambda_value / d0))
+
+    def p_x(y, x):
+        numerator = np.exp(-euclidean_distance(x, y) * (lambda_value / d0))
+        denominator = np.sum(np.exp(-euclidean_distance(x, all_events[:, np.newaxis]) * (lambda_value / d0)), axis=-1)
+        return numerator / denominator
+
+    p_values = np.sum([p_x(y, x) for x in spike_cluster for y in spike_cluster if not np.all(x == y)], axis=-1)
+    isolation_score_value = np.mean(p_values)
+    return isolation_score_value
+
 def spike_oscillations(raw_data, spiketrain,fs,lag_time,time_interval, to_plot):
     spiketrain = np.array(spiketrain, dtype='int')
     spiketrain_index = np.array(spiketrain, dtype='int')
@@ -458,14 +479,21 @@ def main():
             desired_spikes = np.absolute(np.array(desired_spikes))
 
             desired_clusters = colour_list[desired_spikes.argmax()]
+            noise_clusters = colour_list[desired_spikes.argmin()]
+            
             ##
                 
             desired_clusters = st.selectbox(label='Select Desired Cluster',options=colour_list[0:clusters],index=colour_list[0:clusters].index(desired_clusters))
                 
             silhouette = silhouette_score(features,labels)
+            
                 
             peak_indices = np.array(peak_indices[colour_label == desired_clusters])
             spikes = spikes[colour_label == desired_clusters]
+            
+            st.write(isolation_score(features[colour_label == desired_clusters], features[colour_label == noise_clusters]))
+            
+            
                 
         else:
             desired_clusters = 'red'
@@ -483,6 +511,7 @@ def main():
         percent_isi_violations = (sum(isi < 1/1000)/len(isi))*100
 
         st.subheader('Quality Metrics')
+        
 
         col111, col222, col333 = st.columns(3)
 
