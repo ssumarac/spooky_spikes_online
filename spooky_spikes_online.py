@@ -492,12 +492,9 @@ def main():
             spikes = spikes[colour_label == desired_clusters]
             
             
-            st.write(features[colour_label == desired_clusters])
-            st.write(features[colour_label == noise_clusters])
+            result = isolation_score(features[colour_label == desired_clusters], features[colour_label == noise_clusters])
             
-            #st.write(isolation_score(features[colour_label == desired_clusters], features[colour_label == noise_clusters]))
-            
-            
+            st.write(result)
                 
         else:
             desired_clusters = 'red'
