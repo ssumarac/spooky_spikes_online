@@ -491,7 +491,11 @@ def main():
             peak_indices = np.array(peak_indices[colour_label == desired_clusters])
             spikes = spikes[colour_label == desired_clusters]
             
-            st.write(isolation_score(features[colour_label == desired_clusters], features[colour_label == noise_clusters]))
+            
+            st.write(features[colour_label == desired_clusters])
+            st.write(features[colour_label == noise_clusters])
+            
+            #st.write(isolation_score(features[colour_label == desired_clusters], features[colour_label == noise_clusters]))
             
             
                 
