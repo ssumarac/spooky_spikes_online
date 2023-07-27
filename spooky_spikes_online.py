@@ -560,77 +560,77 @@ def main():
         
         percent_isi_violations = (sum(isi < 1/1000)/len(isi))*100
 
-        #st.header('Oscillations')
+        st.header('Oscillations')
         
-        #st.sidebar.title("Machine Learning")
+        st.sidebar.title("Machine Learning")
         
-        #lag_time = 0.5
-        #time_interval = 0.01
-        #psd_power_df, freqs_autocorr, psd_autocorr, binned_time, autocorr = spike_oscillations(raw_data = raw_data, spiketrain = peak_indices,fs = fs,lag_time = 0.5,time_interval = 0.01, to_plot = True)
+        lag_time = 0.5
+        time_interval = 0.01
+        psd_power_df, freqs_autocorr, psd_autocorr, binned_time, autocorr = spike_oscillations(raw_data = raw_data, spiketrain = peak_indices,fs = fs,lag_time = 0.5,time_interval = 0.01, to_plot = True)
         
-        #fig4_pre= go.Figure(data=go.Scatter(
-        #        x = binned_time, 
-        #        y = autocorr,
-        #        name='Autocorrelation',
-        #        line = dict(color='black'),
-        #        showlegend=False))
+        fig4_pre= go.Figure(data=go.Scatter(
+                x = binned_time, 
+                y = autocorr,
+                name='Autocorrelation',
+                line = dict(color='black'),
+                showlegend=False))
 
-        #fig4_pre.update_layout(xaxis_range=[-0.5,0.5])
+        fig4_pre.update_layout(xaxis_range=[-0.5,0.5])
 
-        #fig4_pre.update_layout(
-        #    title="Spiketrain Autocorrelation Function",
-        #    title_x=0.5,
-        #    xaxis_title="Lag (s)",
-        #    yaxis_title="Autocorrelation")
+        fig4_pre.update_layout(
+            title="Spiketrain Autocorrelation Function",
+            title_x=0.5,
+            xaxis_title="Lag (s)",
+            yaxis_title="Autocorrelation")
 
-        #st.plotly_chart(fig4_pre)
+        st.plotly_chart(fig4_pre)
         
-        #fig4 = go.Figure(data=go.Scatter(
-        #        x = freqs_autocorr, 
-        #        y = psd_autocorr,
-        #        name='LombScargle',
-        #        line = dict(color='black'),
-        #        showlegend=False))
+        fig4 = go.Figure(data=go.Scatter(
+                x = freqs_autocorr, 
+                y = psd_autocorr,
+                name='LombScargle',
+                line = dict(color='black'),
+                showlegend=False))
 
-        #fig4.update_layout(xaxis_range=[0,50])
+        fig4.update_layout(xaxis_range=[0,50])
 
-        #fig4.update_layout(
-        #    title="Lomb-Scargle Periodogram",
-        #    title_x=0.5,
-        #    xaxis_title="Frequency (Hz)",
-        #    yaxis_title="Power Spectral Density (V^2 / Hz)")
+        fig4.update_layout(
+            title="Lomb-Scargle Periodogram",
+            title_x=0.5,
+            xaxis_title="Frequency (Hz)",
+            yaxis_title="Power Spectral Density (V^2 / Hz)")
         
-        #st.plotly_chart(fig4)
+        st.plotly_chart(fig4)
 
-        #st.subheader('Spiketrain Oscillation Features')
+        st.subheader('Spiketrain Oscillation Features')
 
-        #st.table(psd_power_df)
+        st.table(psd_power_df)
         
-        #temp_powers = np.array(psd_power_df['Power [dB]'])
+        temp_powers = np.array(psd_power_df['Power [dB]'])
        
-        #dbs_target = st.sidebar.selectbox('Select DBS Target', ['','STN', 'GPi'])
+        dbs_target = st.sidebar.selectbox('Select DBS Target', ['','STN', 'GPi'])
         
-        #if dbs_target == "STN":
-        #    model = load_STN_model()
+        if dbs_target == "STN":
+            model = load_STN_model()
             
-        #    X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
-        #    y_pred = model.predict(X_test)[0]
-        #    st.sidebar.subheader("Predicted Neuron:")
-        #    if y_pred == 0:
-        #        st.sidebar.write("Substantia Nigra Pars Reticulata (SNr)")
-        #    elif y_pred == 1:
-        #        st.sidebar.write("Subthalamic Nucleus (STN)")
+            X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
+            y_pred = model.predict(X_test)[0]
+            st.sidebar.subheader("Predicted Neuron:")
+            if y_pred == 0:
+                st.sidebar.write("Substantia Nigra Pars Reticulata (SNr)")
+            elif y_pred == 1:
+                st.sidebar.write("Subthalamic Nucleus (STN)")
                 
-        #if dbs_target == "GPi":
-        #    model = load_GPi_model()
+        if dbs_target == "GPi":
+            model = load_GPi_model()
             
-        #    X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
-        #    y_pred = model.predict(X_test)[0]
-        #    st.sidebar.subheader("Predicted Neuron:")
-        #    if y_pred == 0:
-        #        st.sidebar.write("Border Cell (BOR)")
-        #    elif y_pred == 1:
-        #        st.sidebar.write("High-Frequency Discharge (HFD)")
+            X_test = np.array([firing_rate, burst_index, cv, temp_powers[0], temp_powers[1], temp_powers[2], temp_powers[3],temp_powers[4], temp_powers[5]]).reshape(1, -1)
+            y_pred = model.predict(X_test)[0]
+            st.sidebar.subheader("Predicted Neuron:")
+            if y_pred == 0:
+                st.sidebar.write("Border Cell (BOR)")
+            elif y_pred == 1:
+                st.sidebar.write("High-Frequency Discharge (HFD)")
 
 
     with tab2:
