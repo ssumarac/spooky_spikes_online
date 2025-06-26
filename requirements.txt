@@ -9,4 +9,4 @@ scipy==1.7.3
 sonpy==1.9.5
 streamlit==1.13.0
 xgboost==1.7.3
-
+altair==4.2.2
